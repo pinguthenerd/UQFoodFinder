@@ -647,7 +647,7 @@ Never invent events. Only report what you find evidence of.`;
       'anthropic-version':'2023-06-01',
     },
     body: JSON.stringify({
-      model:'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens:8000,
       system,
       tools:[{type:'web_search_20250305',name:'web_search'}],
@@ -685,7 +685,7 @@ async function agentLoop(system,user,first) {
     const resp=await fetch(API_ENDPOINT,{
       method:'POST',
       headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system,tools:[{type:'web_search_20250305',name:'web_search'}],messages:msgs})
+      body:JSON.stringify({model: 'claude-haiku-4-5-20251001',max_tokens:8000,system,tools:[{type:'web_search_20250305',name:'web_search'}],messages:msgs})
     });
     if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${resp.status}`);}
     const data=await resp.json();
