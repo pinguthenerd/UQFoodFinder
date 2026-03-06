@@ -119,7 +119,7 @@ function proxyToAnthropic(req, res, apiPath) {
 }
 
 // ── START ─────────────────────────────────────────────────────────────────
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('  🍕  UQ Free Food Finder');
   console.log('  ─────────────────────────────────────');
