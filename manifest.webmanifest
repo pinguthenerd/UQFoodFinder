@@ -1,0 +1,19 @@
+{
+  "name": "UQ Free Food Finder",
+  "short_name": "FoodFinder",
+  "description": "Find UQ society events with free food — powered by Claude AI",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F6EDFF",
+  "theme_color": "#51247A",
+  "categories": ["food", "education", "utilities"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
