@@ -1,738 +1,562 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>QuantRizz</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>FeedMeUQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0f;
-      --surface: #13131a;
-      --surface2: #1c1c26;
-      --border: #2a2a3a;
-      --text: #f0f0ff;
-      --text-muted: #7070a0;
-      --aura: #a78bfa;
-      --aura-glow: rgba(167, 139, 250, 0.3);
-      --aura-bright: #c4b5fd;
-      --gold: #fbbf24;
-      --red: #f87171;
-      --green: #34d399;
-      --accent: #818cf8;
+      --uq-purple:       #51247a;
+      --uq-purple-dark:  #3a1858;
+      --uq-purple-mid:   #6b34a0;
+      --uq-purple-light: #ede8f5;
+      --uq-purple-xlight:#f5f0fb;
+      --uq-gold:         #c9a227;
+      --bg:              #f5f1fb;
+      --surface:         #ffffff;
+      --border:          #e2d9f0;
+      --text:            #1a1020;
+      --text-muted:      #7a6e8a;
+      --green:           #1a7a46;
+      --green-light:     #e6f5ee;
+      --shadow-sm:       0 2px 10px rgba(81,36,122,0.08);
+      --shadow-md:       0 6px 24px rgba(81,36,122,0.14);
+      --shadow-lg:       0 12px 40px rgba(81,36,122,0.2);
     }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',sans-serif; min-height:100vh; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* HEADER */
+    header { background:linear-gradient(135deg,var(--uq-purple-dark) 0%,var(--uq-purple) 60%,var(--uq-purple-mid) 100%); position:sticky; top:0; z-index:200; padding:0 24px; box-shadow:0 3px 20px rgba(58,24,88,0.4); }
+    .hdr { max-width:1120px; margin:0 auto; display:flex; align-items:center; gap:14px; height:66px; }
+    .logo { font-family:'Clash Display',sans-serif; font-size:21px; font-weight:700; color:white; letter-spacing:-0.4px; flex-shrink:0; display:flex; align-items:center; gap:8px; }
+    .logo-icon { width:32px; height:32px; border-radius:9px; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.28); display:flex; align-items:center; justify-content:center; font-size:16px; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    /* Location dropdown */
+    .loc-wrap { position:relative; flex-shrink:0; }
+    .loc-pill { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.22); border-radius:100px; padding:6px 12px 6px 10px; font-size:12px; font-weight:500; color:rgba(255,255,255,0.9); cursor:pointer; user-select:none; transition:background 0.15s; }
+    .loc-pill:hover { background:rgba(255,255,255,0.2); }
+    .loc-pill svg { stroke:rgba(255,255,255,0.6); }
+    #locChevron { transition:transform 0.2s; }
+    .loc-dd { position:absolute; top:calc(100% + 10px); left:0; background:white; border-radius:14px; border:1px solid var(--border); box-shadow:var(--shadow-lg); min-width:255px; z-index:300; overflow:hidden; opacity:0; transform:translateY(-8px); pointer-events:none; transition:opacity 0.18s,transform 0.18s; }
+    .loc-dd.open { opacity:1; transform:translateY(0); pointer-events:all; }
+    .loc-dd-hd { padding:11px 16px 8px; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border); }
+    .loc-opt { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.12s; }
+    .loc-opt:last-child { border-bottom:none; }
+    .loc-opt:hover,.loc-opt.active { background:var(--uq-purple-xlight); }
+    .loc-left { display:flex; align-items:center; gap:11px; }
+    .loc-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .loc-name { font-size:13px; font-weight:600; color:var(--text); }
+    .loc-sub { font-size:11px; color:var(--text-muted); margin-top:1px; }
+    .loc-tick { flex-shrink:0; }
+    .loc-tick.hidden { visibility:hidden; }
 
-    .app {
-      display: flex;
-      width: 100%;
-      max-width: 1280px;
-      position: relative;
-    }
+    /* Search */
+    .search-bar { flex:1; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.22); border-radius:10px; padding:8px 14px; transition:background 0.15s; }
+    .search-bar:focus-within { background:rgba(255,255,255,0.2); }
+    .search-bar svg { stroke:rgba(255,255,255,0.5); flex-shrink:0; }
+    .search-bar input { border:none; background:none; outline:none; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; color:white; width:100%; }
+    .search-bar input::placeholder { color:rgba(255,255,255,0.45); }
+    .mr-btn { display:flex; align-items:center; gap:6px; background:var(--uq-gold); color:#1a1020; border:none; border-radius:10px; padding:8px 14px; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:800; flex-shrink:0; transition:opacity 0.15s; }
+    .mr-btn:hover { opacity:0.9; }
 
-    /* ── Left Sidebar ── */
-    .sidebar {
-      width: 240px;
-      height: 100vh;
-      position: sticky;
-      top: 0;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      border-right: 1px solid var(--border);
-      flex-shrink: 0;
-    }
+    /* TAB BAR */
+    .tab-bar { background:white; border-bottom:1px solid var(--border); position:sticky; top:66px; z-index:190; }
+    .tab-bar-inner { max-width:1120px; margin:0 auto; display:flex; padding:0 24px; overflow-x:auto; scrollbar-width:none; }
+    .tab-bar-inner::-webkit-scrollbar { display:none; }
+    .tab { display:flex; align-items:center; gap:7px; padding:14px 18px; font-size:13px; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2.5px solid transparent; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
+    .tab:hover { color:var(--uq-purple); }
+    .tab.active { color:var(--uq-purple); border-bottom-color:var(--uq-purple); font-weight:700; }
+    .tab svg { flex-shrink:0; }
+    .tbadge { border-radius:100px; font-size:10px; font-weight:800; padding:1px 7px; letter-spacing:0.2px; }
+    .tbadge.green { background:var(--green); color:white; }
+    .tbadge.gold { background:var(--uq-gold); color:#1a1020; }
+    .tbadge.purple { background:var(--uq-purple); color:white; }
 
-    .logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      padding: 12px 12px 24px;
-      background: linear-gradient(135deg, var(--aura-bright), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    /* SUB FILTER */
+    .sub-filter { background:var(--bg); border-bottom:1px solid var(--border); position:sticky; top:115px; z-index:180; }
+    .sf-row { max-width:1120px; margin:0 auto; display:none; gap:8px; padding:10px 24px; overflow-x:auto; scrollbar-width:none; }
+    .sf-row::-webkit-scrollbar { display:none; }
+    .sf-row.visible { display:flex; }
+    .sfc { display:flex; align-items:center; gap:5px; padding:5px 13px; border-radius:100px; border:1.5px solid var(--border); background:white; font-size:12px; font-weight:500; color:var(--text-muted); cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s; }
+    .sfc:hover { border-color:var(--uq-purple); color:var(--uq-purple); }
+    .sfc.active { background:var(--uq-purple); border-color:var(--uq-purple); color:white; }
 
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      font-size: 15px;
-      font-weight: 400;
-      color: var(--text-muted);
-      user-select: none;
-    }
-    .nav-item:hover { background: var(--surface); color: var(--text); transform: translateX(2px); }
-    .nav-item:hover svg { stroke: var(--text); }
-    .nav-item.active { background: var(--surface2); color: var(--text); font-weight: 500; }
-    .nav-item.active svg { stroke: var(--text); }
-    .nav-item svg { stroke: var(--text-muted); transition: stroke 0.15s; flex-shrink: 0; fill: none; }
+    /* MAIN */
+    .main { max-width:1120px; margin:0 auto; padding:28px 24px 64px; }
+    .page { display:none; }
+    .page.active { display:block; }
 
-    .nav-item.post-btn {
-      margin-top: 8px;
-      background: linear-gradient(135deg, #7c3aed, var(--accent));
-      color: white;
-      font-weight: 600;
-      justify-content: center;
-    }
-    .nav-item.post-btn svg { stroke: white; }
-    .nav-item.post-btn:hover { opacity: 0.9; transform: none; }
+    /* HERO */
+    .hero { background:linear-gradient(135deg,var(--uq-purple-dark),var(--uq-purple)); border-radius:18px; padding:26px 28px; margin-bottom:28px; display:flex; align-items:center; justify-content:space-between; gap:20px; overflow:hidden; position:relative; }
+    .hero::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,0.05); }
+    .hero-text h2 { font-family:'Clash Display',sans-serif; font-size:28px; font-weight:700; color:white; letter-spacing:-0.5px; line-height:1.15; margin-bottom:8px; }
+    .hero-text h2 span { color:#d4b8f0; }
+    .hero-text p { font-size:13px; color:rgba(255,255,255,0.65); }
+    .hero-pills { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .hpill { display:flex; align-items:center; gap:5px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.18); border-radius:100px; padding:4px 11px; font-size:11px; font-weight:500; color:rgba(255,255,255,0.85); }
+    .hpill svg { stroke:#d4b8f0; }
+    .hero-art { font-size:70px; flex-shrink:0; position:relative; z-index:1; }
 
-    .badge-pill {
-      margin-left: auto;
-      background: #7c3aed;
-      color: white;
-      font-size: 10px;
-      padding: 1px 6px;
-      border-radius: 20px;
-      font-weight: 700;
-    }
+    /* SECTION */
+    .section { margin-bottom:40px; }
+    .section.hidden { display:none; }
+    .sec-hd { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; }
+    .sec-title { font-family:'Clash Display',sans-serif; font-size:19px; font-weight:600; letter-spacing:-0.3px; }
+    .sec-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .see-all { font-size:12px; font-weight:700; color:var(--uq-purple); cursor:pointer; display:flex; align-items:center; gap:2px; text-decoration:none; }
 
-    .sidebar-footer {
-      margin-top: auto;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      border: 1px solid var(--border);
-    }
-    .sidebar-footer:hover { background: var(--surface); }
-    .av-sm {
-      width: 36px; height: 36px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 800; flex-shrink: 0;
-      font-family: 'Syne', sans-serif; color: white;
-    }
-    .sidebar-footer .info { flex: 1; }
-    .sidebar-footer .name { font-size: 13px; font-weight: 600; }
-    .sidebar-footer .aura-tag { font-size: 11px; color: var(--aura); }
+    /* SCROLL ROW */
+    .scroll-row { display:flex; gap:14px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
+    .scroll-row::-webkit-scrollbar { display:none; }
 
-    /* ── Feed ── */
-    .feed {
-      flex: 1;
-      max-width: 640px;
-      padding: 0 24px;
-    }
+    /* FOOD CARD */
+    .fc { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; flex-shrink:0; width:210px; cursor:pointer; position:relative; transition:box-shadow 0.2s,transform 0.2s; }
+    .fc:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+    .fc-img { width:100%; height:126px; display:flex; align-items:center; justify-content:center; font-size:46px; position:relative; overflow:hidden; }
+    .fc-img .ibg { position:absolute; inset:0; width:100%; height:100%; }
+    .fc-img .fem { position:relative; z-index:1; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.12)); }
+    .ptag { position:absolute; top:10px; left:10px; background:var(--uq-purple); color:white; font-size:11px; font-weight:700; font-family:'Clash Display',sans-serif; padding:3px 8px; border-radius:6px; z-index:2; }
+    .ptag.free { background:var(--green); }
+    .otag { position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); font-size:9px; font-weight:800; color:var(--uq-purple); padding:2px 7px; border-radius:5px; z-index:2; border:1px solid rgba(81,36,122,0.15); letter-spacing:0.2px; }
+    .mrtag { position:absolute; bottom:10px; left:10px; background:var(--uq-gold); color:#1a1020; font-size:9px; font-weight:800; padding:2px 7px; border-radius:5px; z-index:2; }
+    .fc-body { padding:11px 13px 13px; }
+    .fc-name { font-family:'Clash Display',sans-serif; font-size:14px; font-weight:600; letter-spacing:-0.2px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .fc-outlet { font-size:11px; color:var(--uq-purple); font-weight:700; margin-bottom:5px; }
+    .fc-desc { font-size:11px; color:var(--text-muted); margin-bottom:9px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .fc-foot { display:flex; align-items:center; justify-content:space-between; }
+    .fc-price { font-family:'Clash Display',sans-serif; font-size:16px; font-weight:700; }
+    .fc-meta { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text-muted); }
+    .fc-meta svg { stroke:var(--text-muted); }
 
-    .stories-wrap {
-      padding: 20px 0 0;
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 10;
-      padding-bottom: 1px;
-    }
-    .stories-label {
-      font-size: 11px; font-weight: 600; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px;
-    }
-    .stories {
-      display: flex; gap: 14px; overflow-x: auto;
-      padding-bottom: 18px; scrollbar-width: none;
-    }
-    .stories::-webkit-scrollbar { display: none; }
+    /* EVENT CARD */
+    .ec { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; flex-shrink:0; width:280px; cursor:pointer; transition:box-shadow 0.2s,transform 0.2s; }
+    .ec:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+    .ec-top { padding:16px 16px 12px; display:flex; gap:12px; }
+    .ec-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+    .ec-body { flex:1; }
+    .ec-name { font-family:'Clash Display',sans-serif; font-size:14px; font-weight:600; margin-bottom:3px; }
+    .ec-org { font-size:11px; color:var(--uq-purple); font-weight:700; margin-bottom:4px; }
+    .ec-desc { font-size:11px; color:var(--text-muted); line-height:1.4; }
+    .ec-foot { border-top:1px solid var(--border); padding:9px 16px; display:flex; align-items:center; justify-content:space-between; }
+    .ec-detail { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted); }
+    .ec-detail svg { stroke:var(--text-muted); }
+    .ecost { font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; }
+    .ecost.free { background:var(--green-light); color:var(--green); }
+    .ecost.cheap { background:var(--uq-purple-light); color:var(--uq-purple); }
+    .ecost.paid { background:#fdf6e3; color:#8a6200; }
 
-    .story { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0; }
-    .story-ring {
-      width: 60px; height: 60px; border-radius: 50%; padding: 2px;
-      background: linear-gradient(135deg, var(--aura), var(--accent), #ec4899);
-      transition: transform 0.2s;
-    }
-    .story-ring:hover { transform: scale(1.07); }
-    .story-ring.seen { background: var(--border); }
-    .story-inner {
-      width: 100%; height: 100%; border-radius: 50%;
-      border: 2.5px solid var(--bg); overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: white;
-    }
-    .story-name { font-size: 11px; color: var(--text-muted); max-width: 60px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* FREE FOOD CARD */
+    .ffc { background:white; border-radius:16px; border:2px solid var(--green); overflow:hidden; flex-shrink:0; width:238px; cursor:pointer; transition:box-shadow 0.2s,transform 0.2s; }
+    .ffc:hover { box-shadow:0 6px 24px rgba(26,122,70,0.16); transform:translateY(-3px); }
+    .ffc-top { background:var(--green); padding:14px 16px; display:flex; align-items:center; gap:10px; }
+    .ffc-badge { background:white; color:var(--green); font-size:10px; font-weight:900; letter-spacing:1px; padding:3px 8px; border-radius:5px; text-transform:uppercase; flex-shrink:0; }
+    .ffc-title { font-family:'Clash Display',sans-serif; font-size:14px; font-weight:700; color:white; }
+    .ffc-body { padding:12px 15px 14px; }
+    .ffc-org { font-size:11px; font-weight:700; color:var(--uq-purple); margin-bottom:5px; }
+    .ffc-desc { font-size:11px; color:var(--text-muted); line-height:1.45; margin-bottom:9px; }
+    .ffc-meta { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted); }
+    .ffc-meta svg { stroke:var(--green); }
 
-    .divider { height: 1px; background: var(--border); margin: 0 0 8px; }
+    /* MATES RATES CARD */
+    .mrc { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; flex-shrink:0; width:218px; cursor:pointer; transition:box-shadow 0.2s,transform 0.2s; }
+    .mrc:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+    .mrc-hd { background:linear-gradient(135deg,#8a6200,var(--uq-gold)); padding:14px 15px 12px; }
+    .mrc-name { font-family:'Clash Display',sans-serif; font-size:15px; font-weight:700; color:white; margin-bottom:4px; }
+    .mrc-pill { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); border-radius:100px; padding:2px 9px; font-size:10px; font-weight:800; color:white; letter-spacing:0.3px; }
+    .mrc-body { padding:12px 15px 14px; }
+    .mrc-loc { font-size:11px; color:var(--uq-purple); font-weight:700; margin-bottom:5px; }
+    .mrc-desc { font-size:11px; color:var(--text-muted); line-height:1.45; margin-bottom:10px; }
+    .mrc-chips { display:flex; flex-wrap:wrap; gap:5px; }
+    .mrc-chip { font-size:10px; font-weight:600; color:var(--uq-purple); background:var(--uq-purple-light); border-radius:5px; padding:2px 7px; }
 
-    /* Posts */
-    .post {
-      background: var(--surface); border-radius: 20px;
-      margin-bottom: 20px; border: 1px solid var(--border);
-      overflow: hidden; animation: fadeUp 0.4s ease both;
-    }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-    .post:nth-child(2){animation-delay:.05s} .post:nth-child(3){animation-delay:.1s} .post:nth-child(4){animation-delay:.15s}
+    /* INFO STRIP */
+    .info-strip { background:var(--uq-purple-light); border:1px solid var(--border); border-radius:14px; padding:14px 18px; display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+    .info-strip svg { stroke:var(--uq-purple); flex-shrink:0; }
+    .is-text { font-size:13px; color:var(--uq-purple); font-weight:500; line-height:1.5; }
+    .is-text strong { font-weight:800; }
+    .is-cta { margin-left:auto; flex-shrink:0; background:var(--uq-purple); color:white; border:none; border-radius:8px; padding:7px 14px; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700; transition:opacity 0.15s; }
+    .is-cta:hover { opacity:0.88; }
 
-    .post-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
-
-    .post-avatar {
-      width: 40px; height: 40px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 800; font-family: 'Syne', sans-serif;
-      flex-shrink: 0; position: relative; color: white;
-    }
-    .post-avatar .aura-ring {
-      position: absolute; inset: -2px; border-radius: 50%;
-      background: conic-gradient(var(--aura) var(--pct,70%), var(--border) 0);
-      z-index: -1;
-    }
-    .post-avatar .av-inner {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 2px solid var(--surface);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 800; font-family: 'Syne', sans-serif; color: white;
-    }
-
-    .post-user { flex: 1; }
-    .post-user .username {
-      font-size: 14px; font-weight: 600; font-family: 'Syne', sans-serif;
-      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-    }
-    .post-user .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-    .aura-badge {
-      font-size: 11px; padding: 1px 7px; border-radius: 20px; font-weight: 600;
-      background: var(--aura-glow); color: var(--aura-bright);
-      border: 1px solid rgba(167,139,250,0.3); font-family: 'DM Sans', sans-serif;
-    }
-    .aura-badge.gold { background:rgba(251,191,36,0.15); color:var(--gold); border-color:rgba(251,191,36,0.3); }
-    .aura-badge.red  { background:rgba(248,113,113,0.15); color:var(--red);  border-color:rgba(248,113,113,0.3); }
-
-    .post-more {
-      color: var(--text-muted); cursor: pointer; padding: 4px 6px;
-      border-radius: 8px; display: flex; align-items: center;
-    }
-    .post-more:hover { background: var(--surface2); color: var(--text); }
-    .post-more svg { fill: currentColor; }
-
-    /* Media */
-    .post-media {
-      width: 100%; aspect-ratio: 1;
-      position: relative; overflow: hidden; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .post-media::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.55));
-    }
-    .post-media svg.bg-art { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .post-media .media-aura {
-      position: absolute; bottom: 12px; right: 12px; z-index: 2;
-      font-size: 13px; font-weight: 700;
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
-      padding: 5px 11px; border-radius: 20px;
-      color: var(--aura-bright); border: 1px solid rgba(167,139,250,0.4);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .post-media .media-aura.loss { color: var(--red); border-color: rgba(248,113,113,0.4); }
-    .post-media .media-aura svg { stroke: currentColor; flex-shrink: 0; }
-
-    /* Actions */
-    .post-actions { display: flex; align-items: center; gap: 2px; padding: 12px 16px 8px; }
-    .action-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: none; border: none; color: var(--text-muted);
-      font-size: 13px; cursor: pointer; padding: 6px 10px;
-      border-radius: 8px; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
-    }
-    .action-btn svg { stroke: currentColor; fill: none; transition: transform 0.15s; flex-shrink: 0; }
-    .action-btn:hover { background: var(--surface2); color: var(--text); }
-    .action-btn.liked { color: var(--red); }
-    .action-btn.liked svg { fill: var(--red); }
-    .action-btn.aura-up { color: var(--aura); }
-    .action-btn.aura-up:hover { background: var(--aura-glow); }
-    .post-save { margin-left: auto; }
-    @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
-
-    .post-body { padding: 4px 16px 16px; }
-    .post-likes { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
-    .post-caption { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
-    .post-caption strong { color: var(--text); font-weight: 600; }
-    .post-tag { color: var(--accent); }
-    .post-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.5px; }
-
-    .aura-delta {
-      display: inline-flex; align-items: center; gap: 3px;
-      font-size: 11px; padding: 2px 8px; border-radius: 20px;
-      font-weight: 700; margin-left: 4px; vertical-align: middle;
-    }
-    .aura-delta.up  { background:rgba(52,211,153,0.15); color:var(--green); }
-    .aura-delta.down{ background:rgba(248,113,113,0.15); color:var(--red); }
-
-    /* ── Right Sidebar ── */
-    .right-sidebar {
-      width: 340px; flex-shrink: 0; padding: 24px 20px;
-      position: sticky; top: 0; height: 100vh;
-      overflow-y: auto; scrollbar-width: none;
-    }
-    .right-sidebar::-webkit-scrollbar { display: none; }
-
-    .widget {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px; margin-bottom: 16px;
-    }
-    .widget-title {
-      font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted);
-      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-    }
-    .widget-title svg { stroke: var(--text-muted); fill: none; flex-shrink: 0; }
-
-    .lb-row {
-      display: flex; align-items: center; gap: 10px; padding: 8px 6px;
-      border-bottom: 1px solid var(--border); cursor: pointer;
-      border-radius: 8px; transition: background 0.1s;
-    }
-    .lb-row:last-child { border-bottom: none; }
-    .lb-row:hover { background: var(--surface2); }
-    .lb-rank { font-family:'Syne',sans-serif; font-size:13px; font-weight:800; width:22px; text-align:center; color:var(--text-muted); }
-    .lb-rank.top { color: var(--gold); }
-    .lb-av { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; color:white; font-family:'Syne',sans-serif; }
-    .lb-info { flex: 1; }
-    .lb-name { font-size: 13px; font-weight: 600; }
-    .lb-aura { font-size: 11px; color: var(--aura); }
-    .lb-change { font-size:12px; font-weight:700; }
-    .lb-change.up { color:var(--green); } .lb-change.down { color:var(--red); }
-
-    .ticker { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); }
-    .ticker:last-child { border-bottom: none; }
-    .ticker-label { font-size: 13px; }
-    .ticker-val { font-size:13px; font-weight:700; font-family:'Syne',sans-serif; }
-
-    .suggest-row { display:flex; align-items:center; gap:10px; padding:8px 6px; border-radius:10px; cursor:pointer; transition:background 0.1s; }
-    .suggest-row:hover { background: var(--surface2); }
-    .suggest-av { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; color:white; font-family:'Syne',sans-serif; }
-    .suggest-info { flex: 1; }
-    .suggest-name { font-size:13px; font-weight:600; }
-    .suggest-sub { font-size:11px; color:var(--text-muted); }
-    .follow-btn { font-size:12px; font-weight:600; padding:5px 12px; border-radius:8px; border:1px solid var(--aura); background:transparent; color:var(--aura); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
-    .follow-btn:hover { background:var(--aura); color:var(--bg); }
-    .follow-btn.following { background:var(--surface2); border-color:var(--border); color:var(--text-muted); }
+    /* TOAST */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--uq-purple-dark); color:white; border-radius:12px; padding:12px 20px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:500; box-shadow:var(--shadow-lg); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index:999; white-space:nowrap; }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast svg { stroke:#d4b8f0; }
   </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- ════ LEFT SIDEBAR ════ -->
-  <nav class="sidebar">
+<!-- HEADER -->
+<header>
+  <div class="hdr">
     <div class="logo">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"
-          stroke="url(#logoGrad)" stroke-width="1.8" stroke-linejoin="round"/>
-        <defs>
-          <linearGradient id="logoGrad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#c4b5fd"/><stop offset="1" stop-color="#818cf8"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      QuantRizz
+      <div class="logo-icon">🍽️</div>
+      FeedMeUQ
     </div>
 
-    <div class="nav-item active">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5Z"/><path d="M9 21V12h6v9"/></svg>
-      Feed
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Discover
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg>
-      Reels
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
-      Dating
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4H4a1 1 0 0 0-1 1v3a4 4 0 0 0 4 4M17 4h3a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/></svg>
-      Leaderboard
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Messages <span class="badge-pill">3</span>
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      Notifications
-    </div>
-    <div class="nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Profile
-    </div>
-
-    <div class="nav-item post-btn">
-      <svg width="18" height="18" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Post
-    </div>
-
-    <div class="sidebar-footer">
-      <div class="av-sm" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">SK</div>
-      <div class="info">
-        <div class="name">@sigma_kevin</div>
-        <div class="aura-tag">4,200 aura</div>
+    <div class="loc-wrap" id="locWrap">
+      <div class="loc-pill" onclick="toggleLoc()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="locLabel">St Lucia Campus</span>
+        <svg id="locChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
-        <circle cx="5" cy="12" r="1.3" fill="var(--text-muted)"/>
-        <circle cx="12" cy="12" r="1.3" fill="var(--text-muted)"/>
-        <circle cx="19" cy="12" r="1.3" fill="var(--text-muted)"/>
-      </svg>
-    </div>
-  </nav>
-
-  <!-- ════ MAIN FEED ════ -->
-  <main class="feed">
-
-    <div class="stories-wrap">
-      <div class="stories-label">Live Aura</div>
-      <div class="stories">
-        <div class="story">
-          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">SK</div></div>
-          <span class="story-name">Your story</span>
+      <div class="loc-dd" id="locDd">
+        <div class="loc-dd-hd">Select Campus</div>
+        <div class="loc-opt active" onclick="selectLoc('St Lucia',this)">
+          <div class="loc-left"><div class="loc-dot" style="background:#51247a"></div><div><div class="loc-name">St Lucia</div><div class="loc-sub">Main campus · Brisbane</div></div></div>
+          <svg class="loc-tick" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#51247a" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <div class="story">
-          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">AA</div></div>
-          <span class="story-name">aura_god</span>
+        <div class="loc-opt" onclick="selectLoc('Gatton',this)">
+          <div class="loc-left"><div class="loc-dot" style="background:#1a7a46"></div><div><div class="loc-name">Gatton</div><div class="loc-sub">Agricultural campus · 90km west</div></div></div>
+          <svg class="loc-tick hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#51247a" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <div class="story">
-          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#065f46,#0891b2)">VB</div></div>
-          <span class="story-name">void_babe</span>
+        <div class="loc-opt" onclick="selectLoc('Herston',this)">
+          <div class="loc-left"><div class="loc-dot" style="background:#b5440e"></div><div><div class="loc-name">Herston</div><div class="loc-sub">Health sciences · RBWH precinct</div></div></div>
+          <svg class="loc-tick hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#51247a" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <div class="story">
-          <div class="story-ring seen"><div class="story-inner" style="background:linear-gradient(135deg,#dc2626,#f97316)">FL</div></div>
-          <span class="story-name">frog_lord</span>
+        <div class="loc-opt" onclick="selectLoc('Dutton Park',this)">
+          <div class="loc-left"><div class="loc-dot" style="background:#2660e8"></div><div><div class="loc-name">Dutton Park</div><div class="loc-sub">Mater health precinct</div></div></div>
+          <svg class="loc-tick hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#51247a" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <div class="story">
-          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">SK</div></div>
-          <span class="story-name">sigma_kyle</span>
-        </div>
-        <div class="story">
-          <div class="story-ring seen"><div class="story-inner" style="background:linear-gradient(135deg,#ec4899,#f97316)">P9</div></div>
-          <span class="story-name">petal99</span>
-        </div>
-        <div class="story">
-          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#1d4ed8,#0891b2)">HM</div></div>
-          <span class="story-name">hawk_mode</span>
-        </div>
-        <div class="story">
-          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#374151,#6b7280)">NA</div></div>
-          <span class="story-name">npc_andy</span>
-        </div>
-      </div>
-      <div class="divider"></div>
-    </div>
-
-    <!-- ── POST 1 ── -->
-    <div class="post">
-      <div class="post-header">
-        <div class="post-avatar" style="--pct:85%">
-          <div class="aura-ring"></div>
-          <div class="av-inner" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">AA</div>
-        </div>
-        <div class="post-user">
-          <div class="username">aura_ascended <span class="aura-badge gold">10,000</span></div>
-          <div class="meta">Tier: Aura Ascended · 2h ago</div>
-        </div>
-        <div class="post-more">
-          <svg width="18" height="4" viewBox="0 0 18 4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="2" r="1.5" fill="currentColor"/><circle cx="16" cy="2" r="1.5" fill="currentColor"/></svg>
-        </div>
-      </div>
-      <div class="post-media">
-        <svg class="bg-art" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <rect width="600" height="600" fill="#1e1b4b"/>
-          <circle cx="300" cy="300" r="220" fill="none" stroke="#4c1d95" stroke-width="80" opacity="0.6"/>
-          <circle cx="300" cy="300" r="140" fill="none" stroke="#7c3aed" stroke-width="50" opacity="0.5"/>
-          <circle cx="300" cy="300" r="70" fill="#6d28d9" opacity="0.7"/>
-          <ellipse cx="180" cy="160" rx="120" ry="80" fill="#3730a3" opacity="0.4" transform="rotate(-30 180 160)"/>
-          <ellipse cx="420" cy="440" rx="140" ry="90" fill="#4338ca" opacity="0.3" transform="rotate(20 420 440)"/>
-          <g stroke="#c4b5fd" stroke-width="1.5" opacity="0.9" stroke-linecap="round">
-            <line x1="300" y1="258" x2="300" y2="242"/><line x1="321" y1="268" x2="333" y2="256"/>
-            <line x1="331" y1="289" x2="347" y2="289"/><line x1="321" y1="310" x2="333" y2="322"/>
-            <line x1="300" y1="320" x2="300" y2="336"/><line x1="279" y1="310" x2="267" y2="322"/>
-            <line x1="269" y1="289" x2="253" y2="289"/><line x1="279" y1="268" x2="267" y2="256"/>
-          </g>
-          <circle cx="300" cy="289" r="16" fill="#a78bfa" opacity="0.5"/>
-        </svg>
-        <div class="media-aura">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-          +340 aura today
-        </div>
-      </div>
-      <div class="post-actions">
-        <button class="action-btn liked" id="like1" onclick="toggleLike('like1')">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
-          <span class="cnt">2,847</span>
-        </button>
-        <button class="action-btn">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          183
-        </button>
-        <button class="action-btn aura-up" onclick="auraUp(this)">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"/></svg>
-          <span class="au-lbl">Give Aura</span>
-        </button>
-        <button class="action-btn post-save">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        </button>
-      </div>
-      <div class="post-body">
-        <div class="post-likes">2,847 resonances</div>
-        <div class="post-caption"><strong>aura_ascended</strong> reached the summit. the view from 10k aura is indescribable. <span class="post-tag">#AuraAscended</span> <span class="post-tag">#SigmaJourney</span></div>
-        <div class="post-time">2 HOURS AGO</div>
       </div>
     </div>
 
-    <!-- ── POST 2 ── -->
-    <div class="post">
-      <div class="post-header">
-        <div class="post-avatar" style="--pct:22%">
-          <div class="aura-ring"></div>
-          <div class="av-inner" style="background:linear-gradient(135deg,#dc2626,#f97316)">FL</div>
-        </div>
-        <div class="post-user">
-          <div class="username">frog_lord_99 <span class="aura-badge red">312</span></div>
-          <div class="meta">Tier: NPC Energy · 5h ago</div>
-        </div>
-        <div class="post-more">
-          <svg width="18" height="4" viewBox="0 0 18 4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="2" r="1.5" fill="currentColor"/><circle cx="16" cy="2" r="1.5" fill="currentColor"/></svg>
-        </div>
-      </div>
-      <div class="post-media">
-        <svg class="bg-art" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <rect width="600" height="600" fill="#052e16"/>
-          <defs><radialGradient id="gr2" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#065f46"/><stop offset="100%" stop-color="#022c22"/></radialGradient></defs>
-          <rect width="600" height="600" fill="url(#gr2)" opacity="0.8"/>
-          <ellipse cx="200" cy="400" rx="180" ry="120" fill="#047857" opacity="0.25" transform="rotate(-15 200 400)"/>
-          <!-- minimal abstract frog silhouette -->
-          <g fill="#34d399" opacity="0.18" transform="translate(210,190)">
-            <ellipse cx="80" cy="100" rx="65" ry="52"/>
-            <ellipse cx="24" cy="68" rx="26" ry="26"/>
-            <ellipse cx="136" cy="68" rx="26" ry="26"/>
-          </g>
-          <circle cx="268" cy="272" r="9" fill="#6ee7b7" opacity="0.5"/>
-          <circle cx="312" cy="272" r="9" fill="#6ee7b7" opacity="0.5"/>
-          <!-- sad expression line -->
-          <path d="M278 310 Q290 302 302 310" stroke="#6ee7b7" stroke-width="3" fill="none" opacity="0.5" stroke-linecap="round"/>
-        </svg>
-        <div class="media-aura loss">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
-          -47 aura today
-        </div>
-      </div>
-      <div class="post-actions">
-        <button class="action-btn" id="like2" onclick="toggleLike('like2')">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
-          <span class="cnt">12</span>
-        </button>
-        <button class="action-btn">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          47
-        </button>
-        <button class="action-btn aura-up" onclick="auraUp(this)">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"/></svg>
-          <span class="au-lbl">Give Aura</span>
-        </button>
-        <button class="action-btn post-save">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        </button>
-      </div>
-      <div class="post-body">
-        <div class="post-likes">12 resonances</div>
-        <div class="post-caption"><strong>frog_lord_99</strong> got rejected on the dating tab again. <span class="aura-delta down">▼ -15</span> not doing well out here <span class="post-tag">#VoidWalker</span></div>
-        <div class="post-time">5 HOURS AGO</div>
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search outlets, food, events…">
+    </div>
+    <button class="mr-btn" onclick="switchTab('mates')">🎟️ Mates Rates</button>
+  </div>
+</header>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <div class="tab active" id="tab-food" onclick="switchTab('food')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      Campus Food
+    </div>
+    <div class="tab" id="tab-free" onclick="switchTab('free')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Free Food <span class="tbadge green">FREE</span>
+    </div>
+    <div class="tab" id="tab-events" onclick="switchTab('events')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Social Events
+    </div>
+    <div class="tab" id="tab-mates" onclick="switchTab('mates')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+      Mates Rates <span class="tbadge gold">10% OFF</span>
+    </div>
+  </div>
+</div>
+
+<!-- SUB FILTER -->
+<div class="sub-filter">
+  <div class="sf-row visible" id="sf-food">
+    <div class="sfc active" onclick="filterFood('all',this)">All</div>
+    <div class="sfc" onclick="filterFood('union',this)">Union Complex</div>
+    <div class="sfc" onclick="filterFood('phizz',this)">Phizz Court</div>
+    <div class="sfc" onclick="filterFood('biosci',this)">BioSci Precinct</div>
+    <div class="sfc" onclick="filterFood('drinks',this)">Drinks & Boba</div>
+    <div class="sfc" onclick="filterFood('coffee',this)">Coffee</div>
+  </div>
+  <div class="sf-row" id="sf-free">
+    <div class="sfc active" onclick="filterFree('all',this)">All</div>
+    <div class="sfc" onclick="filterFree('daily',this)">Daily Programs</div>
+    <div class="sfc" onclick="filterFree('welfare',this)">UQU Welfare</div>
+    <div class="sfc" onclick="filterFree('events',this)">Free Food Events</div>
+  </div>
+  <div class="sf-row" id="sf-events">
+    <div class="sfc active" onclick="filterEvts('all',this)">All</div>
+    <div class="sfc" onclick="filterEvts('uqu',this)">UQU Events</div>
+    <div class="sfc" onclick="filterEvts('society',this)">Society Events</div>
+    <div class="sfc" onclick="filterEvts('aps',this)">APS / Postgrad</div>
+    <div class="sfc" onclick="filterEvts('uqlife',this)">UQ Life</div>
+  </div>
+  <div class="sf-row" id="sf-mates">
+    <div class="sfc active" onclick="filterMates('all',this)">All Outlets</div>
+    <div class="sfc" onclick="filterMates('food',this)">Food &amp; Café</div>
+    <div class="sfc" onclick="filterMates('drinks',this)">Bar &amp; Drinks</div>
+    <div class="sfc" onclick="filterMates('retail',this)">Retail</div>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- ══ PAGE: CAMPUS FOOD ══ -->
+<div class="page active" id="page-food">
+  <div class="hero">
+    <div class="hero-text">
+      <h2>UQ's best <span>cheap eats</span>,<br>all in one place.</h2>
+      <p>Every campus outlet — sorted for you.</p>
+      <div class="hero-pills">
+        <div class="hpill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Real UQ outlets only</div>
+        <div class="hpill">🎟️ Mates Rates accepted</div>
+        <div class="hpill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Mon–Fri hours</div>
       </div>
     </div>
+    <div class="hero-art">🟣</div>
+  </div>
 
-    <!-- ── POST 3 ── -->
-    <div class="post">
-      <div class="post-header">
-        <div class="post-avatar" style="--pct:72%">
-          <div class="aura-ring"></div>
-          <div class="av-inner" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">SK</div>
-        </div>
-        <div class="post-user">
-          <div class="username">sigma_kyle <span class="aura-badge">5,821</span></div>
-          <div class="meta">Tier: Certified Menace · 11h ago</div>
-        </div>
-        <div class="post-more">
-          <svg width="18" height="4" viewBox="0 0 18 4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="2" r="1.5" fill="currentColor"/><circle cx="16" cy="2" r="1.5" fill="currentColor"/></svg>
-        </div>
+  <!-- Union Complex -->
+  <div class="section" data-loc="union">
+    <div class="sec-hd">
+      <div><div class="sec-title">Union Complex</div><div class="sec-sub">Building 21A · UQU-operated · Mates Rates accepted</div></div>
+      <a class="see-all" href="https://uqu.com.au/food-retail-outlets/" target="_blank">uqu.com.au ›</a>
+    </div>
+    <div class="scroll-row">
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fef8ee"/><circle cx="105" cy="63" r="90" fill="#fde8b8" opacity="0.6"/></svg><span class="fem">🥧</span><div class="ptag">~$5</div><div class="otag">ON A ROLL</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Fresh Meat Pie</div><div class="fc-outlet">On a Roll Bakery</div><div class="fc-desc">Freshly baked pie with mince & gravy — Brisbane classic, baked on campus daily</div><div class="fc-foot"><div class="fc-price">~$5.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 21A</div></div></div>
       </div>
-      <div class="post-media">
-        <svg class="bg-art" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <rect width="600" height="600" fill="#0c1a2e"/>
-          <defs><radialGradient id="gr3" cx="40%" cy="60%" r="65%"><stop offset="0%" stop-color="#0e7490"/><stop offset="100%" stop-color="#0c1a2e"/></radialGradient></defs>
-          <rect width="600" height="600" fill="url(#gr3)"/>
-          <circle cx="300" cy="300" r="110" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="10 7" opacity="0.35"/>
-          <circle cx="300" cy="300" r="175" fill="none" stroke="#0284c7" stroke-width="1" stroke-dasharray="6 10" opacity="0.2"/>
-          <!-- lightning bolt -->
-          <polygon points="325,95 258,298 315,298 275,505 378,268 308,268 368,95" fill="#38bdf8" opacity="0.28"/>
-          <polygon points="325,95 258,298 315,298 275,505 378,268 308,268 368,95" fill="none" stroke="#7dd3fc" stroke-width="2" opacity="0.55"/>
-        </svg>
-        <div class="media-aura">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-          +128 aura today
-        </div>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff5f0"/><circle cx="105" cy="63" r="90" fill="#ffd4b8" opacity="0.6"/></svg><span class="fem">🥐</span><div class="ptag">~$4.50</div><div class="otag">ON A ROLL</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Toastie</div><div class="fc-outlet">On a Roll Bakery</div><div class="fc-desc">Pressed toastie with cheese & your choice of filling — quick campus classic</div><div class="fc-foot"><div class="fc-price">~$4.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 21A</div></div></div>
       </div>
-      <div class="post-actions">
-        <button class="action-btn" id="like3" onclick="toggleLike('like3')">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
-          <span class="cnt">934</span>
-        </button>
-        <button class="action-btn">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          61
-        </button>
-        <button class="action-btn aura-up" onclick="auraUp(this)">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"/></svg>
-          <span class="au-lbl">Give Aura</span>
-        </button>
-        <button class="action-btn post-save">
-          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        </button>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f8f5ff"/><circle cx="105" cy="63" r="90" fill="#dcc8ff" opacity="0.6"/></svg><span class="fem">🍕</span><div class="ptag">~$9</div><div class="otag">PIZZA CAFFE</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Margherita (half)</div><div class="fc-outlet">Pizza Caffe</div><div class="fc-desc">Thin & crispy — UQ institution since 1992. Vegan option available</div><div class="fc-foot"><div class="fc-price">~$9.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> BioSci</div></div></div>
       </div>
-      <div class="post-body">
-        <div class="post-likes">934 resonances</div>
-        <div class="post-caption"><strong>sigma_kyle</strong> matched with someone 3000 aura above me today <span class="aura-delta up">▲ +50</span> punching above my weight, no notes. <span class="post-tag">#AuraGrind</span></div>
-        <div class="post-time">11 HOURS AGO</div>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff5f8"/><circle cx="105" cy="63" r="90" fill="#ffc0d0" opacity="0.6"/></svg><span class="fem">🍕</span><div class="ptag">~$12</div><div class="otag">PIZZA CAFFE</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Fellini — Smoked Salmon</div><div class="fc-outlet">Pizza Caffe</div><div class="fc-desc">Smoked salmon, cream cheese & capers on thin crispy base — crowd favourite</div><div class="fc-foot"><div class="fc-price">~$12.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> BioSci</div></div></div>
+      </div>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f0fff4"/><circle cx="105" cy="63" r="90" fill="#b8f0cc" opacity="0.6"/></svg><span class="fem">🥗</span><div class="ptag">~$8</div><div class="otag">MAIN COURSE</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Daily Special Bowl</div><div class="fc-outlet">Main Course</div><div class="fc-desc">Rotating hot meals made fresh on campus every day — check the board</div><div class="fc-foot"><div class="fc-price">~$8.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 21A</div></div></div>
       </div>
     </div>
+  </div>
 
-  </main>
-
-  <!-- ════ RIGHT SIDEBAR ════ -->
-  <aside class="right-sidebar">
-
-    <div class="widget">
-      <div class="widget-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4H4a1 1 0 0 0-1 1v3a4 4 0 0 0 4 4M17 4h3a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/></svg>
-        Aura Leaderboard
+  <!-- Phizz -->
+  <div class="section" data-loc="phizz">
+    <div class="sec-hd"><div><div class="sec-title">Phizz Food Court</div><div class="sec-sub">Building 63 · Mon–Fri 8am–5pm</div></div></div>
+    <div class="scroll-row">
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff8f0"/><circle cx="105" cy="63" r="90" fill="#ffe4c0" opacity="0.6"/></svg><span class="fem">🌯</span><div class="ptag">~$6.50</div><div class="otag">GYG</div></div>
+        <div class="fc-body"><div class="fc-name">Burrito</div><div class="fc-outlet">Guzman y Gomez</div><div class="fc-desc">100% clean fillings — chicken, beef or veggie, hand-wrapped to order</div><div class="fc-foot"><div class="fc-price">~$6.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 63</div></div></div>
       </div>
-      <div class="lb-row">
-        <div class="lb-rank top">1</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">AA</div>
-        <div class="lb-info"><div class="lb-name">aura_ascended</div><div class="lb-aura">10,000 aura</div></div>
-        <div class="lb-change up">▲ 340</div>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f0fff4"/><circle cx="105" cy="63" r="90" fill="#c0f0cc" opacity="0.6"/></svg><span class="fem">🥪</span><div class="ptag">~$5</div><div class="otag">SUBWAY</div></div>
+        <div class="fc-body"><div class="fc-name">6-inch Sub</div><div class="fc-outlet">Subway</div><div class="fc-desc">Build-your-own sub with fresh veg & sauces on your choice of bread</div><div class="fc-foot"><div class="fc-price">~$5.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 63</div></div></div>
       </div>
-      <div class="lb-row">
-        <div class="lb-rank top">2</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#ec4899,#f97316)">P9</div>
-        <div class="lb-info"><div class="lb-name">petal99</div><div class="lb-aura">9,441 aura</div></div>
-        <div class="lb-change up">▲ 89</div>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff8f0"/><circle cx="105" cy="63" r="90" fill="#ffe0b0" opacity="0.6"/></svg><span class="fem">🍜</span><div class="ptag">~$9.50</div><div class="otag">ORIENTAL CORNER</div></div>
+        <div class="fc-body"><div class="fc-name">Beef Brisket Noodle Soup</div><div class="fc-outlet">Oriental Corner</div><div class="fc-desc">Slow-braised brisket, rich broth, egg noodles & bok choy</div><div class="fc-foot"><div class="fc-price">~$9.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 63</div></div></div>
       </div>
-      <div class="lb-row">
-        <div class="lb-rank top">3</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">SK</div>
-        <div class="lb-info"><div class="lb-name">sigma_kyle</div><div class="lb-aura">5,821 aura</div></div>
-        <div class="lb-change up">▲ 128</div>
-      </div>
-      <div class="lb-row">
-        <div class="lb-rank">4</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">SK</div>
-        <div class="lb-info"><div class="lb-name">sigma_kevin <span style="font-size:10px;color:var(--aura)">(you)</span></div><div class="lb-aura">4,200 aura</div></div>
-        <div class="lb-change up">▲ 55</div>
-      </div>
-      <div class="lb-row">
-        <div class="lb-rank">47</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#dc2626,#f97316)">FL</div>
-        <div class="lb-info"><div class="lb-name">frog_lord_99</div><div class="lb-aura" style="color:var(--red)">312 aura</div></div>
-        <div class="lb-change down">▼ 47</div>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff5f8"/><circle cx="105" cy="63" r="90" fill="#ffc8d8" opacity="0.6"/></svg><span class="fem">🍣</span><div class="ptag">~$7.50</div><div class="otag">KENKO SUSHI</div></div>
+        <div class="fc-body"><div class="fc-name">Sushi Roll Set (8pc)</div><div class="fc-outlet">Kenko Sushi</div><div class="fc-desc">Mixed salmon, tuna & avocado rolls with pickled ginger & soy</div><div class="fc-foot"><div class="fc-price">~$7.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 63</div></div></div>
       </div>
     </div>
+  </div>
 
-    <div class="widget">
-      <div class="widget-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Aura Market
+  <!-- BioSci -->
+  <div class="section" data-loc="biosci">
+    <div class="sec-hd"><div><div class="sec-title">BioSci Library Precinct</div><div class="sec-sub">Building 94 · Darwin's (Licensed) · Bagel Boys</div></div></div>
+    <div class="scroll-row">
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fffbee"/><circle cx="105" cy="63" r="90" fill="#fff0b0" opacity="0.6"/></svg><span class="fem">🥯</span><div class="ptag">~$5.50</div><div class="otag">BAGEL BOYS</div></div>
+        <div class="fc-body"><div class="fc-name">Classic Bagel</div><div class="fc-outlet">Bagel Boys</div><div class="fc-desc">Fresh bagel with cream cheese or your choice of topping — two spots on campus</div><div class="fc-foot"><div class="fc-price">~$5.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 94</div></div></div>
       </div>
-      <div class="ticker"><span class="ticker-label">Global Avg Aura</span><span class="ticker-val" style="color:var(--green)">2,341 ▲</span></div>
-      <div class="ticker"><span class="ticker-label">Recession Risk</span><span class="ticker-val" style="color:var(--gold)">MODERATE</span></div>
-      <div class="ticker"><span class="ticker-label">Top Gaining Tier</span><span class="ticker-val" style="color:var(--aura)">Menace</span></div>
-      <div class="ticker"><span class="ticker-label">Most Rejected Today</span><span class="ticker-val" style="color:var(--red)">frog_lord</span></div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Suggested
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff5f0"/><circle cx="105" cy="63" r="90" fill="#ffc8a8" opacity="0.6"/></svg><span class="fem">🍳</span><div class="ptag">~$7.50</div><div class="otag">DARWIN'S</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Eggs Benedict</div><div class="fc-outlet">Darwin's Cafe</div><div class="fc-desc">Brisbane's 3rd Best Eggs Benny (Courier Mail) — all-day brekkie legend</div><div class="fc-foot"><div class="fc-price">~$7.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 94</div></div></div>
       </div>
-      <div class="suggest-row">
-        <div class="suggest-av" style="background:linear-gradient(135deg,#1d4ed8,#0891b2)">HM</div>
-        <div class="suggest-info"><div class="suggest-name">hawk_mode</div><div class="suggest-sub">7,200 aura · Followed by sigma_kyle</div></div>
-        <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
-      </div>
-      <div class="suggest-row">
-        <div class="suggest-av" style="background:linear-gradient(135deg,#065f46,#0891b2)">VB</div>
-        <div class="suggest-info"><div class="suggest-name">void_babe</div><div class="suggest-sub">3,100 aura · New to the app</div></div>
-        <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
-      </div>
-      <div class="suggest-row">
-        <div class="suggest-av" style="background:linear-gradient(135deg,#374151,#6b7280)">NA</div>
-        <div class="suggest-info"><div class="suggest-name">npc_andy</div><div class="suggest-sub">88 aura · Needs your support</div></div>
-        <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
+      <div class="fc">
+        <div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f5fff8"/><circle cx="105" cy="63" r="90" fill="#b8f0c8" opacity="0.6"/></svg><span class="fem">🥗</span><div class="ptag">~$8.50</div><div class="otag">DARWIN'S</div><div class="mrtag">MATES RATES</div></div>
+        <div class="fc-body"><div class="fc-name">Lunch Plate</div><div class="fc-outlet">Darwin's Cafe (Licensed)</div><div class="fc-desc">All-day lunch options — fresh grab-and-go or sit-in. Licensed venue</div><div class="fc-foot"><div class="fc-price">~$8.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 94</div></div></div>
       </div>
     </div>
+  </div>
 
-    <div style="font-size:11px;color:var(--text-muted);line-height:1.8;padding:0 4px">
-      About · Aura Policy · Terms · Privacy<br>
-      © 2025 QuantRizz Inc. All aura reserved.
+  <!-- Drinks -->
+  <div class="section" data-loc="drinks">
+    <div class="sec-hd"><div><div class="sec-title">Drinks &amp; Bubble Tea</div><div class="sec-sub">Chatime · ShareTea · Boba Machine · Boost Juice</div></div></div>
+    <div class="scroll-row">
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff0f8"/><circle cx="105" cy="63" r="90" fill="#ffb8dc" opacity="0.6"/></svg><span class="fem">🧋</span><div class="ptag">~$4</div><div class="otag">BOBA MACHINE</div></div><div class="fc-body"><div class="fc-name">Vending Bubble Tea</div><div class="fc-outlet">Boba Machine</div><div class="fc-desc">Automated boba vending machine — cheapest bubble tea on campus, no wait</div><div class="fc-foot"><div class="fc-price">~$4.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 94</div></div></div></div>
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f0f8ff"/><circle cx="105" cy="63" r="90" fill="#b8d8ff" opacity="0.6"/></svg><span class="fem">🧋</span><div class="ptag">~$7</div><div class="otag">CHATIME</div></div><div class="fc-body"><div class="fc-name">Milk Tea with Pearls</div><div class="fc-outlet">Chatime</div><div class="fc-desc">Classic or brown sugar milk tea with tapioca pearls — Union Complex</div><div class="fc-foot"><div class="fc-price">~$7.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 21A</div></div></div></div>
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f8f0ff"/><circle cx="105" cy="63" r="90" fill="#d8b8ff" opacity="0.6"/></svg><span class="fem">🧋</span><div class="ptag">~$7.50</div><div class="otag">SHARETEA</div></div><div class="fc-body"><div class="fc-name">Signature Milk Tea</div><div class="fc-outlet">ShareTea</div><div class="fc-desc">New at Phizz — signature blends with customisable sweetness</div><div class="fc-foot"><div class="fc-price">~$7.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 63</div></div></div></div>
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fffaf0"/><circle cx="105" cy="63" r="90" fill="#ffe8a0" opacity="0.6"/></svg><span class="fem">🧃</span><div class="ptag">~$6.50</div><div class="otag">BOOST JUICE</div></div><div class="fc-body"><div class="fc-name">Fresh Smoothie</div><div class="fc-outlet">Boost Juice</div><div class="fc-desc">Fresh fruit smoothies — two locations (Phizz & Physiology LT)</div><div class="fc-foot"><div class="fc-price">~$6.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 2 locations</div></div></div></div>
     </div>
+  </div>
 
-  </aside>
+  <!-- Coffee -->
+  <div class="section" data-loc="coffee">
+    <div class="sec-hd"><div><div class="sec-title">Coffee &amp; Bakery</div><div class="sec-sub">Expresso · Lightbox · Bookmark · Cafe Nano · G-Free Donuts</div></div></div>
+    <div class="scroll-row">
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff8f0"/><circle cx="105" cy="63" r="90" fill="#ffe4b8" opacity="0.6"/></svg><span class="fem">☕</span><div class="ptag">~$4.50</div><div class="otag">EXPRESSO</div><div class="mrtag">MATES RATES</div></div><div class="fc-body"><div class="fc-name">Large Flat White</div><div class="fc-outlet">Expresso (UQU)</div><div class="fc-desc">Allpress Espresso — 10% off with Mates Rates. Union Complex</div><div class="fc-foot"><div class="fc-price">~$4.50</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 21A</div></div></div></div>
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f8fff8"/><circle cx="105" cy="63" r="90" fill="#c0f0c8" opacity="0.6"/></svg><span class="fem">☕</span><div class="ptag">~$4.80</div><div class="otag">LIGHTBOX</div></div><div class="fc-body"><div class="fc-name">Specialty Latte</div><div class="fc-outlet">Lightbox Café (NEW)</div><div class="fc-desc">Brand new café at the QBP building — specialty coffee</div><div class="fc-foot"><div class="fc-price">~$4.80</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> QBP</div></div></div></div>
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#fff5f8"/><circle cx="105" cy="63" r="90" fill="#ffb8cc" opacity="0.6"/></svg><span class="fem">🍩</span><div class="ptag">~$7</div><div class="otag">G-FREE DONUTS</div></div><div class="fc-body"><div class="fc-name">GF Donuts (2pc)</div><div class="fc-outlet">G-Free Donuts (NEW)</div><div class="fc-desc">New at Hawken Building — rotating gluten-free donut flavours</div><div class="fc-foot"><div class="fc-price">~$7.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Hawken</div></div></div></div>
+      <div class="fc"><div class="fc-img"><svg class="ibg" viewBox="0 0 210 126" preserveAspectRatio="xMidYMid slice"><rect width="210" height="126" fill="#f5f0fb"/><circle cx="105" cy="63" r="90" fill="#d8c0ff" opacity="0.6"/></svg><span class="fem">☕</span><div class="ptag">~$5</div><div class="otag">BOOKMARK</div></div><div class="fc-body"><div class="fc-name">Coffee + Pastry</div><div class="fc-outlet">Bookmark Café</div><div class="fc-desc">Espresso & fresh pastry — right next to the library</div><div class="fc-foot"><div class="fc-price">~$5.00</div><div class="fc-meta"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Library</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: FREE FOOD ══ -->
+<div class="page" id="page-free">
+  <div class="info-strip">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="is-text"><strong>No cost, no catch.</strong> UQU Welfare programs are available to all currently enrolled UQ students — no proof of hardship needed.</div>
+    <button class="is-cta" onclick="window.open('https://uqu.com.au','_blank')">UQU Welfare ›</button>
+  </div>
+
+  <div class="section" data-free="daily welfare">
+    <div class="sec-hd"><div><div class="sec-title">Daily Welfare Programs</div><div class="sec-sub">Every weekday during semester — no sign-up needed</div></div></div>
+    <div class="scroll-row">
+      <div class="ffc"><div class="ffc-top"><div class="ffc-badge">FREE</div><div class="ffc-title">Daily Breakfast</div></div><div class="ffc-body"><div class="ffc-org">UQU Welfare</div><div class="ffc-desc">Free breakfast items for all enrolled UQ students every weekday morning — grab and go, no questions asked.</div><div class="ffc-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 8–10am · Union Complex</div></div></div>
+      <div class="ffc"><div class="ffc-top"><div class="ffc-badge">FREE</div><div class="ffc-title">Free Groceries</div></div><div class="ffc-body"><div class="ffc-org">UQU Food Pantry</div><div class="ffc-desc">Free and heavily subsidised grocery items across campuses — part of UQU's ongoing student welfare program.</div><div class="ffc-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Union Complex</div></div></div>
+      <div class="ffc"><div class="ffc-top"><div class="ffc-badge">FREE</div><div class="ffc-title">Free Weeknight Dinners</div></div><div class="ffc-body"><div class="ffc-org">UQU Welfare</div><div class="ffc-desc">Free dinner service on selected weeknights during semester — check UQU welfare page for the current schedule.</div><div class="ffc-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Various locations</div></div></div>
+      <div class="ffc"><div class="ffc-top"><div class="ffc-badge">25% OFF</div><div class="ffc-title">Food Co-Op</div></div><div class="ffc-body"><div class="ffc-org">UQU Food Co-Op (Mates Rates)</div><div class="ffc-desc">25% off ticketed price with Mates Rates card — whole foods, snacks & pantry staples at student prices.</div><div class="ffc-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Union Complex</div></div></div>
+    </div>
+  </div>
+
+  <div class="section" data-free="events welfare">
+    <div class="sec-hd"><div><div class="sec-title">Free Food Events</div><div class="sec-sub">Keep an eye on uqu.com.au and UQ Life for upcoming dates</div></div></div>
+    <div class="scroll-row">
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#e8f5ee">🍳</div><div class="ec-body"><div class="ec-name">UQU Free BBQs</div><div class="ec-org">UQU · Regular semester events</div><div class="ec-desc">Regular free BBQs with live bands throughout semester — classic UQ tradition.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Semester calendar</div><span class="ecost free">FREE</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#ede8f5">📚</div><div class="ec-body"><div class="ec-name">Exam Snack Trolley</div><div class="ec-org">UQU · Exam periods</div><div class="ec-desc">UQU rolls free snack trolleys through the library during exam time — keep going, you've got this.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Library · Exam weeks</div><span class="ecost free">FREE</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#fdf6e3">🎉</div><div class="ec-body"><div class="ec-name">Cultural Fiesta Food Stalls</div><div class="ec-org">UQU · Annual · Semester 1</div><div class="ec-desc">Food stalls from student clubs at UQU's flagship multicultural event — free entry, one of the best days on campus.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Sem 1 · St Lucia</div><span class="ecost free">FREE entry</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#e8f5ee">🎓</div><div class="ec-body"><div class="ec-name">O-Week Free Eats</div><div class="ec-org">UQU · Feb & Jul</div><div class="ec-desc">Free BBQs, snacks and food stalls throughout O-Week — the best week to eat well on campus for nothing.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> February &amp; July</div><span class="ecost free">FREE</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SOCIAL EVENTS ══ -->
+<div class="page" id="page-events">
+  <div class="info-strip">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <div class="is-text"><strong>Food + people = the best events.</strong> From UQU BBQs to society dinners and food festivals. Check uqu.com.au and life.uq.edu.au for current dates.</div>
+  </div>
+
+  <div class="section" data-evt="uqu">
+    <div class="sec-hd"><div><div class="sec-title">UQU Campus Events</div><div class="sec-sub">Run by UQ Union — open to all students</div></div><a class="see-all" href="https://uqu.com.au" target="_blank">uqu.com.au ›</a></div>
+    <div class="scroll-row">
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#ede8f5">🛍️</div><div class="ec-body"><div class="ec-name">Wednesday Markets</div><div class="ec-org">UQU · Every Wednesday</div><div class="ec-desc">Campbell Place springs to life with food stalls, flowers, fashion & handmade goods. Street food from $3. Campus institution.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Wed 8am–3pm · Campbell Place</div><span class="ecost free">Free entry</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#fff0f5">🎸</div><div class="ec-body"><div class="ec-name">Redroom Bar Nights</div><div class="ec-org">The Redroom (UQU) · Weeknights</div><div class="ec-desc">The UQ student bar — live bands, cheap food & drinks. One of Brisbane's best live music spots, right on campus.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Bld 21A · Weeknights</div><span class="ecost cheap">Cheap drinks</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#e8f5ee">🎓</div><div class="ec-body"><div class="ec-name">O-Week Events</div><div class="ec-org">UQU · Feb &amp; Jul</div><div class="ec-desc">Free BBQs, live bands, free food stalls and market day kicking off each semester — best week of the year.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> February &amp; July</div><span class="ecost free">FREE</span></div></div>
+    </div>
+  </div>
+
+  <div class="section" data-evt="society">
+    <div class="sec-hd"><div><div class="sec-title">Society Food Events</div><div class="sec-sub">220+ clubs & societies — most run regular food events. Join at uqu.com.au</div></div></div>
+    <div class="scroll-row">
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#fdf6e3">🌾</div><div class="ec-body"><div class="ec-name">Agribusiness BBQ & Industry Night</div><div class="ec-org">UQ Agribusiness Association</div><div class="ec-desc">Regular semester BBQs and sponsor nights — free food, networking with industry. Year ends with the Ag Industry Dinner.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Semester events</div><span class="ecost free">FREE (members)</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#ede8f5">🍳</div><div class="ec-body"><div class="ec-name">Multicultural Cooking Lessons</div><div class="ec-org">UQ Life × Multicultural Australia</div><div class="ec-desc">Fun cooking classes in partnership with Multicultural Australia — cook a meal, eat it together, meet new people.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Semester dates · life.uq.edu.au</div><span class="ecost free">FREE</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#fff0f5">🏳️‍🌈</div><div class="ec-body"><div class="ec-name">Free Drag Trivia Night</div><div class="ec-org">UQ Life · Redroom</div><div class="ec-desc">Free drag trivia at the Redroom — queer history, pop culture, food provided & prizes. Open to all UQ students.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Redroom · Union Complex</div><span class="ecost free">FREE</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#e8f5ee">🎂</div><div class="ec-body"><div class="ec-name">Rainbow Bake Off</div><div class="ec-org">UQ Ally Network · IDAHOBIT</div><div class="ec-desc">Baking competition for IDAHOBIT — bring a bake or just come eat. Free food, community event, open to all.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> May · IDAHOBIT Day</div><span class="ecost free">FREE</span></div></div>
+    </div>
+  </div>
+
+  <div class="section" data-evt="aps">
+    <div class="sec-hd"><div><div class="sec-title">Postgrad &amp; APS Events</div><div class="sec-sub">APS Inc. — representing 21,000+ postgraduate students at UQ</div></div><a class="see-all" href="https://www.uqaps.org" target="_blank">uqaps.org ›</a></div>
+    <div class="scroll-row">
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#fdf6e3">🌍</div><div class="ec-body"><div class="ec-name">International Food Festival</div><div class="ec-org">APS Inc. · Great Court · May</div><div class="ec-desc">$20 gets $30 in vouchers. 20+ food trucks: Cairo Eatery, Dumpling Master, Istanbul on Wheels, Grassfed Burgers & more.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> May · Great Court</div><span class="ecost paid">$20 → $30 value</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#ede8f5">🌅</div><div class="ec-body"><div class="ec-name">Sunset Jacaranda Picnic</div><div class="ec-org">UQ Life · Jacaranda Season</div><div class="ec-desc">Picnic under the jacarandas at UQ Lakes — shared cheese & deli platters, twilight tunes. Bookings required.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> UQ Lakes · Spring</div><span class="ecost cheap">Booking req.</span></div></div>
+    </div>
+  </div>
+
+  <div class="section" data-evt="uqlife">
+    <div class="sec-hd"><div><div class="sec-title">UQ Life</div><div class="sec-sub">Full event calendar at life.uq.edu.au</div></div><a class="see-all" href="https://life.uq.edu.au" target="_blank">life.uq.edu.au ›</a></div>
+    <div class="scroll-row">
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#fdf6e3">🚐</div><div class="ec-body"><div class="ec-name">Food Trucks at the Great Court</div><div class="ec-org">UQ Life · Selected dates</div><div class="ec-desc">Variety of food trucks in the Great Court — 11am–2:30pm and 4–8:30pm on selected semester dates.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Great Court</div><span class="ecost free">Free entry</span></div></div>
+      <div class="ec"><div class="ec-top"><div class="ec-icon" style="background:#e8f5ee">🫙</div><div class="ec-body"><div class="ec-name">Speed Friending + Snacks</div><div class="ec-org">UQ Life · Welcome events</div><div class="ec-desc">Meet new people fast — Speed Friending with free snacks. Signature welcome event each semester.</div></div></div><div class="ec-foot"><div class="ec-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Semester start weeks</div><span class="ecost free">FREE</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: MATES RATES ══ -->
+<div class="page" id="page-mates">
+  <div class="info-strip" style="background:linear-gradient(135deg,#fdf6e3,#fff8d6);border-color:#e8d070">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a6200" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+    <div class="is-text" style="color:#5a4000"><strong>Mates Rates is 100% free.</strong> Sign up with your UQ student ID — get 10% off food & drinks at all UQU outlets every day during semester. 25% off Food Co-Op & Op Shop.</div>
+    <button class="is-cta" style="background:#8a6200" onclick="window.open('https://uqu.com.au/mates-rates','_blank')">Join Free ›</button>
+  </div>
+
+  <div class="section" data-mr="food">
+    <div class="sec-hd"><div><div class="sec-title">Food &amp; Café — 10% Off</div><div class="sec-sub">Show your digital Mates Rates card at the counter</div></div></div>
+    <div class="scroll-row">
+      <div class="mrc"><div class="mrc-hd"><div class="mrc-name">Darwin's Cafe</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Building 94 · BioSci Precinct</div><div class="mrc-desc">All-day brekkie & lunch. Licensed venue. Famous eggs benny — Brisbane's 3rd best (Courier Mail).</div><div class="mrc-chips"><span class="mrc-chip">All food</span><span class="mrc-chip">All drinks</span><span class="mrc-chip">Coffee</span></div></div></div>
+      <div class="mrc"><div class="mrc-hd"><div class="mrc-name">On a Roll Bakery</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Building 21A · Union Complex</div><div class="mrc-desc">Fresh pies, toasties, rolls, pastries & sandwiches baked on campus daily.</div><div class="mrc-chips"><span class="mrc-chip">Pies</span><span class="mrc-chip">Toasties</span><span class="mrc-chip">Rolls</span><span class="mrc-chip">Pastries</span></div></div></div>
+      <div class="mrc"><div class="mrc-hd"><div class="mrc-name">Main Course</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Building 21A · Union Complex</div><div class="mrc-desc">Daily rotating hot meals — fast, fresh and filling. Check the board for today's special.</div><div class="mrc-chips"><span class="mrc-chip">Hot meals</span><span class="mrc-chip">Daily specials</span></div></div></div>
+      <div class="mrc"><div class="mrc-hd"><div class="mrc-name">Pizza Caffe</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">BioSci Precinct</div><div class="mrc-desc">UQ's iconic thin-crust pizza since 1992. Vegan options. Half pizzas from ~$9.</div><div class="mrc-chips"><span class="mrc-chip">Pizza</span><span class="mrc-chip">Vegan options</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="section" data-mr="drinks">
+    <div class="sec-hd"><div><div class="sec-title">Bar &amp; Drinks — 10% Off Food</div><div class="sec-sub">Discount excludes alcohol — applies to food & non-alcoholic drinks only</div></div></div>
+    <div class="scroll-row">
+      <div class="mrc"><div class="mrc-hd"><div class="mrc-name">The Redroom</div><div class="mrc-pill">🎟️ 10% OFF food</div></div><div class="mrc-body"><div class="mrc-loc">Building 21A · Union Complex</div><div class="mrc-desc">UQ's student bar — live music & cheap eats. 10% off food & non-alcoholic drinks. Alcohol excluded.</div><div class="mrc-chips"><span class="mrc-chip">Bar food</span><span class="mrc-chip">Soft drinks</span><span class="mrc-chip">Live music</span></div></div></div>
+      <div class="mrc"><div class="mrc-hd"><div class="mrc-name">Expresso</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Building 21A · Union Complex</div><div class="mrc-desc">UQU's main coffee bar using Allpress Espresso. Flat whites, lattes, cold brew and pastries.</div><div class="mrc-chips"><span class="mrc-chip">Coffee</span><span class="mrc-chip">Cold brew</span><span class="mrc-chip">Pastries</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="section" data-mr="retail">
+    <div class="sec-hd"><div><div class="sec-title">Retail — Extra Savings</div><div class="sec-sub">Food Co-Op & Op Shop get 25% off — best deal on campus</div></div></div>
+    <div class="scroll-row">
+      <div class="mrc"><div class="mrc-hd" style="background:linear-gradient(135deg,#1a5c38,var(--green))"><div class="mrc-name">Food Co-Op</div><div class="mrc-pill">🎟️ 25% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Union Complex</div><div class="mrc-desc">25% off ticketed price — whole foods, snacks, pantry staples & ethical products at student prices.</div><div class="mrc-chips"><span class="mrc-chip">Pantry staples</span><span class="mrc-chip">Snacks</span><span class="mrc-chip">Whole foods</span></div></div></div>
+      <div class="mrc"><div class="mrc-hd" style="background:linear-gradient(135deg,#4a3060,#6b34a0)"><div class="mrc-name">UQU ETC.</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Union Complex</div><div class="mrc-desc">UQU's convenience store — snacks, drinks, stationery & everyday essentials.</div><div class="mrc-chips"><span class="mrc-chip">Snacks</span><span class="mrc-chip">Drinks</span><span class="mrc-chip">Essentials</span></div></div></div>
+      <div class="mrc"><div class="mrc-hd" style="background:linear-gradient(135deg,#3a3a3a,#606060)"><div class="mrc-name">Lolly Shop</div><div class="mrc-pill">🎟️ 10% OFF</div></div><div class="mrc-body"><div class="mrc-loc">Union Complex</div><div class="mrc-desc">Bulk lollies, chocolates & sweet treats. 10% off with your Mates Rates digital card.</div><div class="mrc-chips"><span class="mrc-chip">Lollies</span><span class="mrc-chip">Chocolates</span><span class="mrc-chip">Treats</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Done!</span>
 </div>
 
 <script>
-  const likeData = {
-    like1: { count: 2847, liked: true },
-    like2: { count: 12,   liked: false },
-    like3: { count: 934,  liked: false },
-  };
+  const TABS = ['food','free','events','mates'];
+  const SF_MAP = {food:'sf-food', free:'sf-free', events:'sf-events', mates:'sf-mates'};
 
-  function toggleLike(id) {
-    const d = likeData[id];
-    const btn = document.getElementById(id);
-    d.liked = !d.liked;
-    d.count += d.liked ? 1 : -1;
-    btn.classList.toggle('liked', d.liked);
-    btn.querySelector('.cnt').textContent = d.count.toLocaleString();
-    const svg = btn.querySelector('svg');
-    svg.style.animation = 'none';
-    void svg.offsetWidth;
-    if (d.liked) svg.style.animation = 'pop 0.3s ease';
+  function switchTab(id) {
+    TABS.forEach(t => {
+      document.getElementById('tab-'+t).classList.toggle('active', t===id);
+      document.getElementById('page-'+t).classList.toggle('active', t===id);
+    });
+    Object.values(SF_MAP).forEach(sf => document.getElementById(sf).classList.remove('visible'));
+    if (SF_MAP[id]) document.getElementById(SF_MAP[id]).classList.add('visible');
   }
 
-  function auraUp(btn) {
-    const lbl = btn.querySelector('.au-lbl');
-    btn.disabled = true;
-    lbl.textContent = '+10 Sent!';
-    btn.style.opacity = '0.7';
-    setTimeout(() => {
-      lbl.textContent = 'Give Aura';
-      btn.disabled = false;
-      btn.style.opacity = '';
-    }, 2000);
+  function setActive(rowId, chip) {
+    document.querySelectorAll('#'+rowId+' .sfc').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
   }
+  function filterFood(loc, chip) { setActive('sf-food', chip); document.querySelectorAll('#page-food .section').forEach(s => s.classList.toggle('hidden', loc!=='all' && s.dataset.loc!==loc)); }
+  function filterFree(type, chip) { setActive('sf-free', chip); document.querySelectorAll('#page-free .section').forEach(s => s.classList.toggle('hidden', type!=='all' && !(s.dataset.free||'').includes(type))); }
+  function filterEvts(type, chip) { setActive('sf-events', chip); document.querySelectorAll('#page-events .section').forEach(s => s.classList.toggle('hidden', type!=='all' && !(s.dataset.evt||'').includes(type))); }
+  function filterMates(type, chip) { setActive('sf-mates', chip); document.querySelectorAll('#page-mates .section').forEach(s => s.classList.toggle('hidden', type!=='all' && s.dataset.mr!==type)); }
 
-  function toggleFollow(btn) {
-    const following = btn.classList.toggle('following');
-    btn.textContent = following ? 'Following' : 'Follow';
+  function toggleLoc() {
+    const dd = document.getElementById('locDd');
+    const ch = document.getElementById('locChevron');
+    const open = dd.classList.toggle('open');
+    ch.style.transform = open ? 'rotate(180deg)' : '';
+  }
+  function selectLoc(name, el) {
+    document.getElementById('locLabel').textContent = name + ' Campus';
+    document.querySelectorAll('.loc-opt').forEach(o => { o.classList.remove('active'); o.querySelector('.loc-tick').classList.add('hidden'); });
+    el.classList.add('active'); el.querySelector('.loc-tick').classList.remove('hidden');
+    document.getElementById('locDd').classList.remove('open');
+    document.getElementById('locChevron').style.transform = '';
+    showToast('📍 Switched to ' + name + ' Campus');
+  }
+  document.addEventListener('click', e => {
+    const w = document.getElementById('locWrap');
+    if (w && !w.contains(e.target)) { document.getElementById('locDd').classList.remove('open'); document.getElementById('locChevron').style.transform = ''; }
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._tt);
+    window._tt = setTimeout(() => t.classList.remove('show'), 2400);
   }
 </script>
 </body>
