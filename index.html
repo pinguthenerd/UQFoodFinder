@@ -218,17 +218,8 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
 .tog.on{background:var(--md-primary);border-color:var(--md-primary)}
 .tog-thumb{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--md-outline);transition:all .3s var(--ease);display:flex;align-items:center;justify-content:center;font-size:12px}
 .tog.on .tog-thumb{transform:translateX(20px);background:white}
-
-.api-wrap{padding:8px 16px 16px}
-.api-field{width:100%;padding:14px 16px;border:2px solid var(--md-outline-var);border-radius:14px;background:var(--md-surface-variant);color:var(--md-on-surface);font-family:'Nunito',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:8px}
-.api-field:focus{border-color:var(--md-primary)}
-.api-field::placeholder{color:var(--md-outline)}
-.btn-save{width:100%;padding:12px;background:var(--md-primary-container);color:var(--md-on-primary-container);border:none;border-radius:14px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s}
-.btn-save:active{background:var(--md-primary);color:var(--md-on-primary)}
-.key-st{padding:8px 16px 12px;font-size:.78rem;color:var(--md-on-surface-var)}
-
-/* Proxy notice */
-.proxy-notice{margin:0 16px 0;padding:14px 16px;background:var(--md-warning-container);border-radius:16px;font-size:.8rem;color:var(--md-warning);line-height:1.55;display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--md-warning) 30%,transparent)}
+/* Deployment notice */
+.proxy-notice{margin:0 16px 0;padding:14px 16px;background:var(--md-primary-container);border-radius:16px;font-size:.8rem;color:var(--md-on-primary-container);line-height:1.55;display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--md-primary) 20%,transparent)}
 .about-info{padding:12px 16px 16px;font-size:.82rem;color:var(--md-on-surface-var);line-height:1.6}
 
 /* ══ BOTTOM SHEET ══ */
@@ -332,28 +323,11 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
     <div class="page" id="page-settings">
       <div class="settings-list">
 
-        <!-- Proxy notice -->
+        <!-- Deployment notice -->
         <div class="proxy-notice">
-          <span>⚡</span>
-          <span><strong>Local proxy active.</strong> This app requires the bundled <code>server.js</code> Node proxy to be running on port 3747. This bypasses browser CORS restrictions when calling the Anthropic API.</span>
+          <span>☁️</span>
+          <span><strong>Deployed on Render.</strong> Your Anthropic API key is stored securely as a server environment variable — it never touches the browser. Just scan and go.</span>
         </div>
-
-        <!-- API Key -->
-        <!--<div class="s-card">
-          <div class="s-glabel">Anthropic API</div>
-          <div class="s-row">
-            <div class="s-icon">🔑</div>
-            <div class="s-text">
-              <div class="s-label">API Key</div>
-              <div class="s-hint">Stored locally on this device. Sent only to your local proxy server.</div>
-            </div>
-          </div>
-          <div class="api-wrap">
-            <input type="password" class="api-field" id="apiIn" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false">
-            <button class="btn-save" onclick="saveKey()">Save API Key</button>
-          </div>
-          <div class="key-st" id="keySt"></div>
-        </div>-->
 
         <!-- Appearance -->
         <div class="s-card">
@@ -377,13 +351,14 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
             <div class="s-icon">🍕</div>
             <div class="s-text">
               <div class="s-label">UQ Free Food Finder</div>
-              <div class="s-hint">v1.1 — PWA with local proxy</div>
+              <div class="s-hint">v1.2 — Deployed on Render</div>
             </div>
           </div>
           <div class="about-info">
-            Uses Claude AI with web search to scan public Instagram pages of UQ student societies for upcoming events with free food, BBQs, snacks, or catering. All API calls go through the local Node.js proxy (<code>server.js</code>) to avoid CORS issues.
+            Uses Claude AI with web search to scan public Instagram pages of UQ student societies for upcoming events with free food, BBQs, snacks, or catering. The Anthropic API key is stored securely as a Render environment variable and never exposed to the browser.
           </div>
         </div>
+
       </div>
     </div>
   </div><!-- /pages -->
@@ -419,9 +394,9 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
 'use strict';
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
-// All API calls go through the local proxy to avoid CORS
-const PROXY_BASE = 'http://localhost:3747/api/anthropic';
-const API_ENDPOINT = PROXY_BASE + '/v1/messages';
+// Relative URL works on both Render (https://your-app.onrender.com)
+// and locally (http://localhost:3747) without any changes
+const API_ENDPOINT = '/api/anthropic/v1/messages';
 
 const SOCIETIES = [
   {name:"UQ Union",handle:"uqu_official",emoji:"🏛️"},
@@ -453,7 +428,6 @@ const SOCIETIES = [
 // ── STATE ─────────────────────────────────────────────────────────────────
 const S = {
   page: 'home',
-  apiKey: localStorage.getItem('uq_key') || '',
   theme: localStorage.getItem('uq_theme') || 'light',
   selected: new Set(SOCIETIES.map(s=>s.handle)),
   events: tryParse(localStorage.getItem('uq_events'), []),
@@ -467,19 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setTheme(S.theme, false);
   buildSocList();
   renderEvents(S.events);
-  if(S.apiKey){ document.getElementById('apiIn').value=S.apiKey; setKeySt('✅ API key loaded','var(--md-success)'); }
   if(S.lastScan){ showLastScan(new Date(S.lastScan)); }
-  checkProxy();
 });
-
-async function checkProxy() {
-  try {
-    const r = await fetch('http://localhost:3747/', {method:'HEAD', signal: AbortSignal.timeout(2000)});
-    if(r.ok || r.status === 200 || r.status === 404) return; // proxy is up
-  } catch(e) {}
-  // Proxy not running
-  setTimeout(()=>snack('⚠️ Start server.js first! See README.txt'), 1500);
-}
 
 // ── THEME ─────────────────────────────────────────────────────────────────
 function setTheme(t, save=true) {
@@ -506,18 +469,6 @@ function goPage(name) {
   document.getElementById('fab').style.display = name==='home'?'flex':'none';
 }
 function goScan(){ goPage('scan'); }
-
-// ── API KEY ───────────────────────────────────────────────────────────────
-function saveKey() {
-  const v = document.getElementById('apiIn').value.trim();
-  if(!v){ setKeySt('⚠️ Enter a key','var(--md-error)'); return; }
-  if(!v.startsWith('sk-ant')){ setKeySt('⚠️ Should start with sk-ant…','var(--md-error)'); return; }
-  S.apiKey = v;
-  localStorage.setItem('uq_key', v);
-  setKeySt('✅ Saved!','var(--md-success)');
-  snack('API key saved 🔑');
-}
-function setKeySt(msg,col){ const el=document.getElementById('keySt'); el.textContent=msg; el.style.color=col; }
 
 // ── SOCIETY LIST ──────────────────────────────────────────────────────────
 function buildSocList() {
@@ -624,9 +575,6 @@ function setSt(txt,sub,on,prog) {
 // ── SCAN ──────────────────────────────────────────────────────────────────
 async function startScan() {
   if(S.scanning) return;
-  const key = document.getElementById('apiIn').value.trim()||S.apiKey;
-  if(!key||!key.startsWith('sk-ant')){ snack('⚠️ Add API key in Settings first'); goPage('settings'); return; }
-  S.apiKey=key; localStorage.setItem('uq_key',key);
   const socs=SOCIETIES.filter(s=>S.selected.has(s.handle));
   if(!socs.length){ snack('⚠️ Select at least one society'); return; }
 
@@ -640,17 +588,13 @@ async function startScan() {
   document.getElementById('logBody').innerHTML='';
 
   setSt('Agent starting…','Connecting to Claude AI',true,'ind');
-  addLog(`Scanning ${socs.length} societies via local proxy`,'');
-  addLog('Proxy: http://localhost:3747','');
+  addLog(`Scanning ${socs.length} societies`,'');
 
-  try { await runAgent(socs, key); }
+  try { await runAgent(socs); }
   catch(err) {
     addLog('Error: '+err.message,'e');
     setSt('Scan failed',err.message.slice(0,60),false,0);
     snack('❌ '+err.message.slice(0,60));
-    if(err.message.includes('fetch')||err.message.includes('proxy')||err.message.includes('Failed')) {
-      snack('❌ Proxy not running — start server.js first');
-    }
   } finally {
     S.scanning=false;
     const btn=document.getElementById('scanBtn');
@@ -663,7 +607,7 @@ async function startScan() {
 }
 
 // ── CLAUDE AGENT ──────────────────────────────────────────────────────────
-async function runAgent(socs, key) {
+async function runAgent(socs) {
   const today = new Date().toLocaleDateString('en-AU',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const list = socs.map(s=>`@${s.handle} (${s.name})`).join('\n');
 
@@ -693,7 +637,7 @@ Never invent events. Only report what you find evidence of.`;
 
   const user = `Search these UQ society Instagram pages for upcoming food events:\n\n${list}\n\nReturn a JSON array.`;
 
-  addLog('Calling Anthropic API via local proxy…','');
+  addLog('Calling Anthropic API via proxy…','');
   setSt('Searching Instagram pages…','Claude AI is scanning posts',true,'ind');
 
   const resp = await fetch(API_ENDPOINT, {
@@ -725,7 +669,7 @@ Never invent events. Only report what you find evidence of.`;
 
   if(data.stop_reason==='tool_use') {
     addLog('Running agentic loop for more searches…','');
-    await agentLoop(key,system,user,data);
+    await agentLoop(system,user,data);
     return;
   }
 
@@ -733,14 +677,14 @@ Never invent events. Only report what you find evidence of.`;
   parseAndShow(raw);
 }
 
-async function agentLoop(key,system,user,first) {
+async function agentLoop(system,user,first) {
   let msgs=[{role:'user',content:user},{role:'assistant',content:first.content}];
   for(let i=0;i<6;i++) {
     addLog(`Agentic iteration ${i+1}…`,'');
     setSt('Deep searching…',`Round ${i+1}`,true,'ind');
     const resp=await fetch(API_ENDPOINT,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system,tools:[{type:'web_search_20250305',name:'web_search'}],messages:msgs})
     });
     if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${resp.status}`);}
