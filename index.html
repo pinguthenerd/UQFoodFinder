@@ -33,7 +33,6 @@
       overflow-x: hidden;
     }
 
-    /* ── Layout ── */
     .app {
       display: flex;
       width: 100%;
@@ -41,7 +40,7 @@
       position: relative;
     }
 
-    /* ── Left Sidebar (Nav) ── */
+    /* ── Left Sidebar ── */
     .sidebar {
       width: 240px;
       height: 100vh;
@@ -64,6 +63,9 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .nav-item {
@@ -80,8 +82,10 @@
       user-select: none;
     }
     .nav-item:hover { background: var(--surface); color: var(--text); transform: translateX(2px); }
+    .nav-item:hover svg { stroke: var(--text); }
     .nav-item.active { background: var(--surface2); color: var(--text); font-weight: 500; }
-    .nav-item .icon { font-size: 20px; width: 24px; text-align: center; }
+    .nav-item.active svg { stroke: var(--text); }
+    .nav-item svg { stroke: var(--text-muted); transition: stroke 0.15s; flex-shrink: 0; fill: none; }
 
     .nav-item.post-btn {
       margin-top: 8px;
@@ -90,9 +94,20 @@
       font-weight: 600;
       justify-content: center;
     }
+    .nav-item.post-btn svg { stroke: white; }
     .nav-item.post-btn:hover { opacity: 0.9; transform: none; }
 
-    .sidebar-avatar {
+    .badge-pill {
+      margin-left: auto;
+      background: #7c3aed;
+      color: white;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
       margin-top: auto;
       display: flex;
       align-items: center;
@@ -102,20 +117,24 @@
       cursor: pointer;
       border: 1px solid var(--border);
     }
-    .sidebar-avatar:hover { background: var(--surface); }
-    .sidebar-avatar .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
-    .sidebar-avatar .info { flex: 1; }
-    .sidebar-avatar .name { font-size: 13px; font-weight: 600; }
-    .sidebar-avatar .aura-tag { font-size: 11px; color: var(--aura); }
+    .sidebar-footer:hover { background: var(--surface); }
+    .av-sm {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; flex-shrink: 0;
+      font-family: 'Syne', sans-serif; color: white;
+    }
+    .sidebar-footer .info { flex: 1; }
+    .sidebar-footer .name { font-size: 13px; font-weight: 600; }
+    .sidebar-footer .aura-tag { font-size: 11px; color: var(--aura); }
 
-    /* ── Main Feed ── */
+    /* ── Feed ── */
     .feed {
       flex: 1;
       max-width: 640px;
       padding: 0 24px;
     }
 
-    /* Stories */
     .stories-wrap {
       padding: 20px 0 0;
       position: sticky;
@@ -125,420 +144,353 @@
       padding-bottom: 1px;
     }
     .stories-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 14px;
+      font-size: 11px; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px;
     }
     .stories {
-      display: flex;
-      gap: 14px;
-      overflow-x: auto;
-      padding-bottom: 18px;
-      scrollbar-width: none;
+      display: flex; gap: 14px; overflow-x: auto;
+      padding-bottom: 18px; scrollbar-width: none;
     }
     .stories::-webkit-scrollbar { display: none; }
 
-    .story {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
+    .story { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0; }
     .story-ring {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      padding: 2px;
+      width: 60px; height: 60px; border-radius: 50%; padding: 2px;
       background: linear-gradient(135deg, var(--aura), var(--accent), #ec4899);
       transition: transform 0.2s;
     }
     .story-ring:hover { transform: scale(1.07); }
     .story-ring.seen { background: var(--border); }
     .story-inner {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 2.5px solid var(--bg);
-      background: var(--surface2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      overflow: hidden;
+      width: 100%; height: 100%; border-radius: 50%;
+      border: 2.5px solid var(--bg); overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: white;
     }
     .story-name { font-size: 11px; color: var(--text-muted); max-width: 60px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .divider { height: 1px; background: var(--border); margin: 0 0 8px; }
 
-    /* Post Cards */
+    /* Posts */
     .post {
-      background: var(--surface);
-      border-radius: 20px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      animation: fadeUp 0.4s ease both;
+      background: var(--surface); border-radius: 20px;
+      margin-bottom: 20px; border: 1px solid var(--border);
+      overflow: hidden; animation: fadeUp 0.4s ease both;
     }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .post:nth-child(2) { animation-delay: 0.05s; }
-    .post:nth-child(3) { animation-delay: 0.1s; }
-    .post:nth-child(4) { animation-delay: 0.15s; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+    .post:nth-child(2){animation-delay:.05s} .post:nth-child(3){animation-delay:.1s} .post:nth-child(4){animation-delay:.15s}
 
-    .post-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-    }
+    .post-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+
     .post-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-weight: 700;
-      flex-shrink: 0;
-      position: relative;
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; font-family: 'Syne', sans-serif;
+      flex-shrink: 0; position: relative; color: white;
     }
     .post-avatar .aura-ring {
-      position: absolute;
-      inset: -2px;
-      border-radius: 50%;
-      background: conic-gradient(var(--aura) var(--pct, 70%), var(--border) 0);
+      position: absolute; inset: -2px; border-radius: 50%;
+      background: conic-gradient(var(--aura) var(--pct,70%), var(--border) 0);
       z-index: -1;
     }
     .post-avatar .av-inner {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       border: 2px solid var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; font-family: 'Syne', sans-serif; color: white;
     }
-    .post-user { flex: 1; }
-    .post-user .username { font-size: 14px; font-weight: 600; font-family: 'Syne', sans-serif; }
-    .post-user .meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-    .aura-badge {
-      font-size: 11px;
-      padding: 1px 7px;
-      border-radius: 20px;
-      font-weight: 600;
-      background: var(--aura-glow);
-      color: var(--aura-bright);
-      border: 1px solid rgba(167,139,250,0.3);
-    }
-    .aura-badge.gold { background: rgba(251,191,36,0.15); color: var(--gold); border-color: rgba(251,191,36,0.3); }
-    .aura-badge.red { background: rgba(248,113,113,0.15); color: var(--red); border-color: rgba(248,113,113,0.3); }
-    .post-more { color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px; }
 
+    .post-user { flex: 1; }
+    .post-user .username {
+      font-size: 14px; font-weight: 600; font-family: 'Syne', sans-serif;
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    }
+    .post-user .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .aura-badge {
+      font-size: 11px; padding: 1px 7px; border-radius: 20px; font-weight: 600;
+      background: var(--aura-glow); color: var(--aura-bright);
+      border: 1px solid rgba(167,139,250,0.3); font-family: 'DM Sans', sans-serif;
+    }
+    .aura-badge.gold { background:rgba(251,191,36,0.15); color:var(--gold); border-color:rgba(251,191,36,0.3); }
+    .aura-badge.red  { background:rgba(248,113,113,0.15); color:var(--red);  border-color:rgba(248,113,113,0.3); }
+
+    .post-more {
+      color: var(--text-muted); cursor: pointer; padding: 4px 6px;
+      border-radius: 8px; display: flex; align-items: center;
+    }
+    .post-more:hover { background: var(--surface2); color: var(--text); }
+    .post-more svg { fill: currentColor; }
+
+    /* Media */
     .post-media {
-      width: 100%;
-      aspect-ratio: 1;
-      background: var(--surface2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
+      width: 100%; aspect-ratio: 1;
+      position: relative; overflow: hidden; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
     .post-media::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.5));
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.55));
     }
+    .post-media svg.bg-art { position: absolute; inset: 0; width: 100%; height: 100%; }
     .post-media .media-aura {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      z-index: 2;
-      font-size: 13px;
-      font-weight: 700;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      padding: 4px 10px;
-      border-radius: 20px;
-      color: var(--aura-bright);
-      border: 1px solid rgba(167,139,250,0.4);
+      position: absolute; bottom: 12px; right: 12px; z-index: 2;
+      font-size: 13px; font-weight: 700;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      padding: 5px 11px; border-radius: 20px;
+      color: var(--aura-bright); border: 1px solid rgba(167,139,250,0.4);
+      display: flex; align-items: center; gap: 5px;
     }
+    .post-media .media-aura.loss { color: var(--red); border-color: rgba(248,113,113,0.4); }
+    .post-media .media-aura svg { stroke: currentColor; flex-shrink: 0; }
 
-    .post-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 12px 16px 8px;
-    }
+    /* Actions */
+    .post-actions { display: flex; align-items: center; gap: 2px; padding: 12px 16px 8px; }
     .action-btn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 13px;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: all 0.15s;
-      font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; color: var(--text-muted);
+      font-size: 13px; cursor: pointer; padding: 6px 10px;
+      border-radius: 8px; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
     }
+    .action-btn svg { stroke: currentColor; fill: none; transition: transform 0.15s; flex-shrink: 0; }
     .action-btn:hover { background: var(--surface2); color: var(--text); }
-    .action-btn .emoji { font-size: 18px; }
     .action-btn.liked { color: var(--red); }
-    .action-btn.liked .emoji { animation: pop 0.3s ease; }
-    @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+    .action-btn.liked svg { fill: var(--red); }
     .action-btn.aura-up { color: var(--aura); }
-
+    .action-btn.aura-up:hover { background: var(--aura-glow); }
     .post-save { margin-left: auto; }
+    @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
 
     .post-body { padding: 4px 16px 16px; }
     .post-likes { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
     .post-caption { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
-    .post-caption strong { color: var(--text); font-weight: 500; }
+    .post-caption strong { color: var(--text); font-weight: 600; }
     .post-tag { color: var(--accent); }
     .post-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.5px; }
 
-    /* Aura change pill */
     .aura-delta {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-weight: 700;
-      margin-left: 6px;
-      vertical-align: middle;
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; padding: 2px 8px; border-radius: 20px;
+      font-weight: 700; margin-left: 4px; vertical-align: middle;
     }
-    .aura-delta.up { background: rgba(52,211,153,0.15); color: var(--green); }
-    .aura-delta.down { background: rgba(248,113,113,0.15); color: var(--red); }
+    .aura-delta.up  { background:rgba(52,211,153,0.15); color:var(--green); }
+    .aura-delta.down{ background:rgba(248,113,113,0.15); color:var(--red); }
 
     /* ── Right Sidebar ── */
     .right-sidebar {
-      width: 340px;
-      flex-shrink: 0;
-      padding: 24px 20px;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      scrollbar-width: none;
+      width: 340px; flex-shrink: 0; padding: 24px 20px;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; scrollbar-width: none;
     }
     .right-sidebar::-webkit-scrollbar { display: none; }
 
     .widget {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; margin-bottom: 16px;
     }
     .widget-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 14px;
+      font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
     }
+    .widget-title svg { stroke: var(--text-muted); fill: none; flex-shrink: 0; }
 
-    /* Leaderboard */
     .lb-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.1s;
-      border-radius: 8px;
-      padding: 8px 6px;
+      display: flex; align-items: center; gap: 10px; padding: 8px 6px;
+      border-bottom: 1px solid var(--border); cursor: pointer;
+      border-radius: 8px; transition: background 0.1s;
     }
     .lb-row:last-child { border-bottom: none; }
     .lb-row:hover { background: var(--surface2); }
-    .lb-rank {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      font-weight: 800;
-      width: 22px;
-      text-align: center;
-      color: var(--text-muted);
-    }
+    .lb-rank { font-family:'Syne',sans-serif; font-size:13px; font-weight:800; width:22px; text-align:center; color:var(--text-muted); }
     .lb-rank.top { color: var(--gold); }
-    .lb-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .lb-av { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; color:white; font-family:'Syne',sans-serif; }
     .lb-info { flex: 1; }
     .lb-name { font-size: 13px; font-weight: 600; }
     .lb-aura { font-size: 11px; color: var(--aura); }
-    .lb-change { font-size: 12px; font-weight: 700; }
-    .lb-change.up { color: var(--green); }
-    .lb-change.down { color: var(--red); }
+    .lb-change { font-size:12px; font-weight:700; }
+    .lb-change.up { color:var(--green); } .lb-change.down { color:var(--red); }
 
-    /* Aura market ticker */
-    .ticker {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .ticker { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); }
     .ticker:last-child { border-bottom: none; }
     .ticker-label { font-size: 13px; }
-    .ticker-val { font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; }
+    .ticker-val { font-size:13px; font-weight:700; font-family:'Syne',sans-serif; }
 
-    /* Suggested */
-    .suggest-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 6px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.1s;
-    }
+    .suggest-row { display:flex; align-items:center; gap:10px; padding:8px 6px; border-radius:10px; cursor:pointer; transition:background 0.1s; }
     .suggest-row:hover { background: var(--surface2); }
-    .suggest-av { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .suggest-av { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; color:white; font-family:'Syne',sans-serif; }
     .suggest-info { flex: 1; }
-    .suggest-name { font-size: 13px; font-weight: 600; }
-    .suggest-sub { font-size: 11px; color: var(--text-muted); }
-    .follow-btn {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--aura);
-      background: transparent;
-      color: var(--aura);
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: all 0.15s;
-    }
-    .follow-btn:hover { background: var(--aura); color: var(--bg); }
-    .follow-btn.following { background: var(--surface2); border-color: var(--border); color: var(--text-muted); }
-
-    /* Bottom nav (mobile feel on narrow) */
-    .bottom-nav { display: none; }
+    .suggest-name { font-size:13px; font-weight:600; }
+    .suggest-sub { font-size:11px; color:var(--text-muted); }
+    .follow-btn { font-size:12px; font-weight:600; padding:5px 12px; border-radius:8px; border:1px solid var(--aura); background:transparent; color:var(--aura); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+    .follow-btn:hover { background:var(--aura); color:var(--bg); }
+    .follow-btn.following { background:var(--surface2); border-color:var(--border); color:var(--text-muted); }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- LEFT SIDEBAR -->
+  <!-- ════ LEFT SIDEBAR ════ -->
   <nav class="sidebar">
-    <div class="logo">QuantRizz ✦</div>
-    <div class="nav-item active"><span class="icon">⚡</span> Feed</div>
-    <div class="nav-item"><span class="icon">🔍</span> Discover</div>
-    <div class="nav-item"><span class="icon">🎬</span> Reels</div>
-    <div class="nav-item"><span class="icon">💘</span> Dating</div>
-    <div class="nav-item"><span class="icon">🏆</span> Leaderboard</div>
-    <div class="nav-item"><span class="icon">💬</span> Messages <span style="margin-left:auto;background:#7c3aed;color:white;font-size:10px;padding:1px 6px;border-radius:20px;font-weight:700;">3</span></div>
-    <div class="nav-item"><span class="icon">🔔</span> Notifications</div>
-    <div class="nav-item"><span class="icon">👤</span> Profile</div>
-    <div class="nav-item post-btn"><span class="icon">＋</span> New Post</div>
-    <div class="sidebar-avatar">
-      <div class="av" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">K</div>
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"
+          stroke="url(#logoGrad)" stroke-width="1.8" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="logoGrad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#c4b5fd"/><stop offset="1" stop-color="#818cf8"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      QuantRizz
+    </div>
+
+    <div class="nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5Z"/><path d="M9 21V12h6v9"/></svg>
+      Feed
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Discover
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg>
+      Reels
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+      Dating
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4H4a1 1 0 0 0-1 1v3a4 4 0 0 0 4 4M17 4h3a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/></svg>
+      Leaderboard
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages <span class="badge-pill">3</span>
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications
+    </div>
+    <div class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </div>
+
+    <div class="nav-item post-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Post
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="av-sm" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">SK</div>
       <div class="info">
         <div class="name">@sigma_kevin</div>
-        <div class="aura-tag">✨ 4,200 aura</div>
+        <div class="aura-tag">4,200 aura</div>
       </div>
-      <span style="color:var(--text-muted);font-size:18px">⋯</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
+        <circle cx="5" cy="12" r="1.3" fill="var(--text-muted)"/>
+        <circle cx="12" cy="12" r="1.3" fill="var(--text-muted)"/>
+        <circle cx="19" cy="12" r="1.3" fill="var(--text-muted)"/>
+      </svg>
     </div>
   </nav>
 
-  <!-- MAIN FEED -->
+  <!-- ════ MAIN FEED ════ -->
   <main class="feed">
-    <!-- Stories -->
+
     <div class="stories-wrap">
       <div class="stories-label">Live Aura</div>
       <div class="stories">
         <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">🔥</div>
-          </div>
+          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">SK</div></div>
           <span class="story-name">Your story</span>
         </div>
         <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">👑</div>
-          </div>
+          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">AA</div></div>
           <span class="story-name">aura_god</span>
         </div>
         <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">🌙</div>
-          </div>
+          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#065f46,#0891b2)">VB</div></div>
           <span class="story-name">void_babe</span>
         </div>
         <div class="story">
-          <div class="story-ring seen">
-            <div class="story-inner">🐸</div>
-          </div>
+          <div class="story-ring seen"><div class="story-inner" style="background:linear-gradient(135deg,#dc2626,#f97316)">FL</div></div>
           <span class="story-name">frog_lord</span>
         </div>
         <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">⚡</div>
-          </div>
+          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">SK</div></div>
           <span class="story-name">sigma_kyle</span>
         </div>
         <div class="story">
-          <div class="story-ring seen">
-            <div class="story-inner">🌸</div>
-          </div>
+          <div class="story-ring seen"><div class="story-inner" style="background:linear-gradient(135deg,#ec4899,#f97316)">P9</div></div>
           <span class="story-name">petal99</span>
         </div>
         <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">🦅</div>
-          </div>
+          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#1d4ed8,#0891b2)">HM</div></div>
           <span class="story-name">hawk_mode</span>
         </div>
         <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">💀</div>
-          </div>
+          <div class="story-ring"><div class="story-inner" style="background:linear-gradient(135deg,#374151,#6b7280)">NA</div></div>
           <span class="story-name">npc_andy</span>
         </div>
       </div>
       <div class="divider"></div>
     </div>
 
-    <!-- POST 1 -->
+    <!-- ── POST 1 ── -->
     <div class="post">
       <div class="post-header">
         <div class="post-avatar" style="--pct:85%">
           <div class="aura-ring"></div>
-          <div class="av-inner" style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">👑</div>
+          <div class="av-inner" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">AA</div>
         </div>
         <div class="post-user">
-          <div class="username">aura_ascended <span class="aura-badge gold">✦ 10,000</span></div>
+          <div class="username">aura_ascended <span class="aura-badge gold">10,000</span></div>
           <div class="meta">Tier: Aura Ascended · 2h ago</div>
         </div>
-        <div class="post-more">⋯</div>
+        <div class="post-more">
+          <svg width="18" height="4" viewBox="0 0 18 4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="2" r="1.5" fill="currentColor"/><circle cx="16" cy="2" r="1.5" fill="currentColor"/></svg>
+        </div>
       </div>
-      <div class="post-media" style="background:linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95)">
-        🌌
-        <div class="media-aura">✨ +340 aura today</div>
+      <div class="post-media">
+        <svg class="bg-art" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <rect width="600" height="600" fill="#1e1b4b"/>
+          <circle cx="300" cy="300" r="220" fill="none" stroke="#4c1d95" stroke-width="80" opacity="0.6"/>
+          <circle cx="300" cy="300" r="140" fill="none" stroke="#7c3aed" stroke-width="50" opacity="0.5"/>
+          <circle cx="300" cy="300" r="70" fill="#6d28d9" opacity="0.7"/>
+          <ellipse cx="180" cy="160" rx="120" ry="80" fill="#3730a3" opacity="0.4" transform="rotate(-30 180 160)"/>
+          <ellipse cx="420" cy="440" rx="140" ry="90" fill="#4338ca" opacity="0.3" transform="rotate(20 420 440)"/>
+          <g stroke="#c4b5fd" stroke-width="1.5" opacity="0.9" stroke-linecap="round">
+            <line x1="300" y1="258" x2="300" y2="242"/><line x1="321" y1="268" x2="333" y2="256"/>
+            <line x1="331" y1="289" x2="347" y2="289"/><line x1="321" y1="310" x2="333" y2="322"/>
+            <line x1="300" y1="320" x2="300" y2="336"/><line x1="279" y1="310" x2="267" y2="322"/>
+            <line x1="269" y1="289" x2="253" y2="289"/><line x1="279" y1="268" x2="267" y2="256"/>
+          </g>
+          <circle cx="300" cy="289" r="16" fill="#a78bfa" opacity="0.5"/>
+        </svg>
+        <div class="media-aura">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          +340 aura today
+        </div>
       </div>
       <div class="post-actions">
-        <button class="action-btn liked" onclick="toggleLike(this)"><span class="emoji">❤️</span> 2,847</button>
-        <button class="action-btn" onclick="this.querySelector('.emoji').style.animation='none';void this.offsetWidth;this.querySelector('.emoji').style.animation=''"><span class="emoji">💬</span> 183</button>
-        <button class="action-btn aura-up" onclick="auraUp(this)"><span class="emoji">⚡</span> Give Aura</button>
-        <button class="action-btn post-save"><span class="emoji">🔖</span></button>
+        <button class="action-btn liked" id="like1" onclick="toggleLike('like1')">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+          <span class="cnt">2,847</span>
+        </button>
+        <button class="action-btn">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          183
+        </button>
+        <button class="action-btn aura-up" onclick="auraUp(this)">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"/></svg>
+          <span class="au-lbl">Give Aura</span>
+        </button>
+        <button class="action-btn post-save">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
       </div>
       <div class="post-body">
         <div class="post-likes">2,847 resonances</div>
@@ -547,28 +499,59 @@
       </div>
     </div>
 
-    <!-- POST 2 -->
+    <!-- ── POST 2 ── -->
     <div class="post">
       <div class="post-header">
-        <div class="post-avatar" style="--pct:40%">
+        <div class="post-avatar" style="--pct:22%">
           <div class="aura-ring"></div>
-          <div class="av-inner" style="background:linear-gradient(135deg,#dc2626,#f97316)">🐸</div>
+          <div class="av-inner" style="background:linear-gradient(135deg,#dc2626,#f97316)">FL</div>
         </div>
         <div class="post-user">
-          <div class="username">frog_lord_99 <span class="aura-badge red">☁ 312</span></div>
+          <div class="username">frog_lord_99 <span class="aura-badge red">312</span></div>
           <div class="meta">Tier: NPC Energy · 5h ago</div>
         </div>
-        <div class="post-more">⋯</div>
+        <div class="post-more">
+          <svg width="18" height="4" viewBox="0 0 18 4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="2" r="1.5" fill="currentColor"/><circle cx="16" cy="2" r="1.5" fill="currentColor"/></svg>
+        </div>
       </div>
-      <div class="post-media" style="background:linear-gradient(135deg,#064e3b,#065f46,#047857)">
-        🐸
-        <div class="media-aura" style="color:#f87171;border-color:rgba(248,113,113,0.4)">💀 -47 aura today</div>
+      <div class="post-media">
+        <svg class="bg-art" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <rect width="600" height="600" fill="#052e16"/>
+          <defs><radialGradient id="gr2" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#065f46"/><stop offset="100%" stop-color="#022c22"/></radialGradient></defs>
+          <rect width="600" height="600" fill="url(#gr2)" opacity="0.8"/>
+          <ellipse cx="200" cy="400" rx="180" ry="120" fill="#047857" opacity="0.25" transform="rotate(-15 200 400)"/>
+          <!-- minimal abstract frog silhouette -->
+          <g fill="#34d399" opacity="0.18" transform="translate(210,190)">
+            <ellipse cx="80" cy="100" rx="65" ry="52"/>
+            <ellipse cx="24" cy="68" rx="26" ry="26"/>
+            <ellipse cx="136" cy="68" rx="26" ry="26"/>
+          </g>
+          <circle cx="268" cy="272" r="9" fill="#6ee7b7" opacity="0.5"/>
+          <circle cx="312" cy="272" r="9" fill="#6ee7b7" opacity="0.5"/>
+          <!-- sad expression line -->
+          <path d="M278 310 Q290 302 302 310" stroke="#6ee7b7" stroke-width="3" fill="none" opacity="0.5" stroke-linecap="round"/>
+        </svg>
+        <div class="media-aura loss">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
+          -47 aura today
+        </div>
       </div>
       <div class="post-actions">
-        <button class="action-btn" onclick="toggleLike(this)"><span class="emoji">🤍</span> 12</button>
-        <button class="action-btn"><span class="emoji">💬</span> 47</button>
-        <button class="action-btn aura-up" onclick="auraUp(this)"><span class="emoji">⚡</span> Give Aura</button>
-        <button class="action-btn post-save"><span class="emoji">🔖</span></button>
+        <button class="action-btn" id="like2" onclick="toggleLike('like2')">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+          <span class="cnt">12</span>
+        </button>
+        <button class="action-btn">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          47
+        </button>
+        <button class="action-btn aura-up" onclick="auraUp(this)">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"/></svg>
+          <span class="au-lbl">Give Aura</span>
+        </button>
+        <button class="action-btn post-save">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
       </div>
       <div class="post-body">
         <div class="post-likes">12 resonances</div>
@@ -577,28 +560,53 @@
       </div>
     </div>
 
-    <!-- POST 3 -->
+    <!-- ── POST 3 ── -->
     <div class="post">
       <div class="post-header">
         <div class="post-avatar" style="--pct:72%">
           <div class="aura-ring"></div>
-          <div class="av-inner" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">⚡</div>
+          <div class="av-inner" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">SK</div>
         </div>
         <div class="post-user">
-          <div class="username">sigma_kyle <span class="aura-badge">✦ 5,821</span></div>
+          <div class="username">sigma_kyle <span class="aura-badge">5,821</span></div>
           <div class="meta">Tier: Certified Menace · 11h ago</div>
         </div>
-        <div class="post-more">⋯</div>
+        <div class="post-more">
+          <svg width="18" height="4" viewBox="0 0 18 4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="2" r="1.5" fill="currentColor"/><circle cx="16" cy="2" r="1.5" fill="currentColor"/></svg>
+        </div>
       </div>
-      <div class="post-media" style="background:linear-gradient(135deg,#0c4a6e,#1e3a5f,#0e7490)">
-        ⚡
-        <div class="media-aura">✨ +128 aura today</div>
+      <div class="post-media">
+        <svg class="bg-art" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <rect width="600" height="600" fill="#0c1a2e"/>
+          <defs><radialGradient id="gr3" cx="40%" cy="60%" r="65%"><stop offset="0%" stop-color="#0e7490"/><stop offset="100%" stop-color="#0c1a2e"/></radialGradient></defs>
+          <rect width="600" height="600" fill="url(#gr3)"/>
+          <circle cx="300" cy="300" r="110" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="10 7" opacity="0.35"/>
+          <circle cx="300" cy="300" r="175" fill="none" stroke="#0284c7" stroke-width="1" stroke-dasharray="6 10" opacity="0.2"/>
+          <!-- lightning bolt -->
+          <polygon points="325,95 258,298 315,298 275,505 378,268 308,268 368,95" fill="#38bdf8" opacity="0.28"/>
+          <polygon points="325,95 258,298 315,298 275,505 378,268 308,268 368,95" fill="none" stroke="#7dd3fc" stroke-width="2" opacity="0.55"/>
+        </svg>
+        <div class="media-aura">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          +128 aura today
+        </div>
       </div>
       <div class="post-actions">
-        <button class="action-btn" onclick="toggleLike(this)"><span class="emoji">🤍</span> 934</button>
-        <button class="action-btn"><span class="emoji">💬</span> 61</button>
-        <button class="action-btn aura-up" onclick="auraUp(this)"><span class="emoji">⚡</span> Give Aura</button>
-        <button class="action-btn post-save"><span class="emoji">🔖</span></button>
+        <button class="action-btn" id="like3" onclick="toggleLike('like3')">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+          <span class="cnt">934</span>
+        </button>
+        <button class="action-btn">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          61
+        </button>
+        <button class="action-btn aura-up" onclick="auraUp(this)">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.09 12.11a1 1 0 0 0-.09 1.13l4 6.76A1 1 0 0 0 9 21h6a1 1 0 0 0 .85-.47l4-6.53a1 1 0 0 0-.05-1.09L13 2Z"/></svg>
+          <span class="au-lbl">Give Aura</span>
+        </button>
+        <button class="action-btn post-save">
+          <svg width="19" height="19" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
       </div>
       <div class="post-body">
         <div class="post-likes">934 resonances</div>
@@ -609,105 +617,75 @@
 
   </main>
 
-  <!-- RIGHT SIDEBAR -->
+  <!-- ════ RIGHT SIDEBAR ════ -->
   <aside class="right-sidebar">
 
-    <!-- Aura Leaderboard -->
     <div class="widget">
-      <div class="widget-title">🏆 Aura Leaderboard</div>
+      <div class="widget-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4H4a1 1 0 0 0-1 1v3a4 4 0 0 0 4 4M17 4h3a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/></svg>
+        Aura Leaderboard
+      </div>
       <div class="lb-row">
         <div class="lb-rank top">1</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">👑</div>
-        <div class="lb-info">
-          <div class="lb-name">aura_ascended</div>
-          <div class="lb-aura">✨ 10,000 aura</div>
-        </div>
+        <div class="lb-av" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">AA</div>
+        <div class="lb-info"><div class="lb-name">aura_ascended</div><div class="lb-aura">10,000 aura</div></div>
         <div class="lb-change up">▲ 340</div>
       </div>
       <div class="lb-row">
         <div class="lb-rank top">2</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#ec4899,#f97316)">🌸</div>
-        <div class="lb-info">
-          <div class="lb-name">petal99</div>
-          <div class="lb-aura">✨ 9,441 aura</div>
-        </div>
+        <div class="lb-av" style="background:linear-gradient(135deg,#ec4899,#f97316)">P9</div>
+        <div class="lb-info"><div class="lb-name">petal99</div><div class="lb-aura">9,441 aura</div></div>
         <div class="lb-change up">▲ 89</div>
       </div>
       <div class="lb-row">
         <div class="lb-rank top">3</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">⚡</div>
-        <div class="lb-info">
-          <div class="lb-name">sigma_kyle</div>
-          <div class="lb-aura">✨ 5,821 aura</div>
-        </div>
+        <div class="lb-av" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">SK</div>
+        <div class="lb-info"><div class="lb-name">sigma_kyle</div><div class="lb-aura">5,821 aura</div></div>
         <div class="lb-change up">▲ 128</div>
       </div>
       <div class="lb-row">
         <div class="lb-rank">4</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">K</div>
-        <div class="lb-info">
-          <div class="lb-name">sigma_kevin <span style="font-size:10px;color:var(--aura)">(you)</span></div>
-          <div class="lb-aura">✨ 4,200 aura</div>
-        </div>
+        <div class="lb-av" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">SK</div>
+        <div class="lb-info"><div class="lb-name">sigma_kevin <span style="font-size:10px;color:var(--aura)">(you)</span></div><div class="lb-aura">4,200 aura</div></div>
         <div class="lb-change up">▲ 55</div>
       </div>
       <div class="lb-row">
         <div class="lb-rank">47</div>
-        <div class="lb-av" style="background:linear-gradient(135deg,#dc2626,#f97316)">🐸</div>
-        <div class="lb-info">
-          <div class="lb-name">frog_lord_99</div>
-          <div class="lb-aura">☁ 312 aura</div>
-        </div>
+        <div class="lb-av" style="background:linear-gradient(135deg,#dc2626,#f97316)">FL</div>
+        <div class="lb-info"><div class="lb-name">frog_lord_99</div><div class="lb-aura" style="color:var(--red)">312 aura</div></div>
         <div class="lb-change down">▼ 47</div>
       </div>
     </div>
 
-    <!-- Aura Market -->
     <div class="widget">
-      <div class="widget-title">📉 Aura Market</div>
-      <div class="ticker">
-        <span class="ticker-label">Global Avg Aura</span>
-        <span class="ticker-val" style="color:var(--green)">2,341 ▲</span>
+      <div class="widget-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Aura Market
       </div>
-      <div class="ticker">
-        <span class="ticker-label">Recession Risk</span>
-        <span class="ticker-val" style="color:var(--gold)">MODERATE</span>
-      </div>
-      <div class="ticker">
-        <span class="ticker-label">Top Gaining Tier</span>
-        <span class="ticker-val" style="color:var(--aura)">Menace</span>
-      </div>
-      <div class="ticker">
-        <span class="ticker-label">Most Rejected Today</span>
-        <span class="ticker-val" style="color:var(--red)">frog_lord 💀</span>
-      </div>
+      <div class="ticker"><span class="ticker-label">Global Avg Aura</span><span class="ticker-val" style="color:var(--green)">2,341 ▲</span></div>
+      <div class="ticker"><span class="ticker-label">Recession Risk</span><span class="ticker-val" style="color:var(--gold)">MODERATE</span></div>
+      <div class="ticker"><span class="ticker-label">Top Gaining Tier</span><span class="ticker-val" style="color:var(--aura)">Menace</span></div>
+      <div class="ticker"><span class="ticker-label">Most Rejected Today</span><span class="ticker-val" style="color:var(--red)">frog_lord</span></div>
     </div>
 
-    <!-- Suggested -->
     <div class="widget">
-      <div class="widget-title">👥 Suggested</div>
+      <div class="widget-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Suggested
+      </div>
       <div class="suggest-row">
-        <div class="suggest-av" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)">🦅</div>
-        <div class="suggest-info">
-          <div class="suggest-name">hawk_mode</div>
-          <div class="suggest-sub">✨ 7,200 aura · Followed by sigma_kyle</div>
-        </div>
+        <div class="suggest-av" style="background:linear-gradient(135deg,#1d4ed8,#0891b2)">HM</div>
+        <div class="suggest-info"><div class="suggest-name">hawk_mode</div><div class="suggest-sub">7,200 aura · Followed by sigma_kyle</div></div>
         <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
       </div>
       <div class="suggest-row">
-        <div class="suggest-av" style="background:linear-gradient(135deg,#065f46,#0891b2)">🌙</div>
-        <div class="suggest-info">
-          <div class="suggest-name">void_babe</div>
-          <div class="suggest-sub">✨ 3,100 aura · New to the app</div>
-        </div>
+        <div class="suggest-av" style="background:linear-gradient(135deg,#065f46,#0891b2)">VB</div>
+        <div class="suggest-info"><div class="suggest-name">void_babe</div><div class="suggest-sub">3,100 aura · New to the app</div></div>
         <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
       </div>
       <div class="suggest-row">
-        <div class="suggest-av" style="background:linear-gradient(135deg,#7c3aed,#db2777)">💀</div>
-        <div class="suggest-info">
-          <div class="suggest-name">npc_andy</div>
-          <div class="suggest-sub">☁ 88 aura · Needs your support</div>
-        </div>
+        <div class="suggest-av" style="background:linear-gradient(135deg,#374151,#6b7280)">NA</div>
+        <div class="suggest-info"><div class="suggest-name">npc_andy</div><div class="suggest-sub">88 aura · Needs your support</div></div>
         <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
       </div>
     </div>
@@ -721,38 +699,40 @@
 </div>
 
 <script>
-  function toggleLike(btn) {
-    const isLiked = btn.classList.contains('liked');
-    btn.classList.toggle('liked');
-    const emoji = btn.querySelector('.emoji');
-    const parts = btn.innerHTML.match(/(\d[\d,]*)/);
-    if (parts) {
-      let count = parseInt(parts[0].replace(/,/g, ''));
-      count = isLiked ? count - 1 : count + 1;
-      btn.innerHTML = `<span class="emoji">${isLiked ? '🤍' : '❤️'}</span> ${count.toLocaleString()}`;
-    }
-    if (!isLiked) {
-      btn.querySelector('.emoji').style.animation = 'none';
-      void btn.querySelector('.emoji').offsetWidth;
-      btn.querySelector('.emoji').style.animation = 'pop 0.3s ease';
-    }
+  const likeData = {
+    like1: { count: 2847, liked: true },
+    like2: { count: 12,   liked: false },
+    like3: { count: 934,  liked: false },
+  };
+
+  function toggleLike(id) {
+    const d = likeData[id];
+    const btn = document.getElementById(id);
+    d.liked = !d.liked;
+    d.count += d.liked ? 1 : -1;
+    btn.classList.toggle('liked', d.liked);
+    btn.querySelector('.cnt').textContent = d.count.toLocaleString();
+    const svg = btn.querySelector('svg');
+    svg.style.animation = 'none';
+    void svg.offsetWidth;
+    if (d.liked) svg.style.animation = 'pop 0.3s ease';
   }
 
   function auraUp(btn) {
-    btn.style.color = '#c4b5fd';
-    btn.innerHTML = '<span class="emoji">⚡</span> +10 Sent!';
+    const lbl = btn.querySelector('.au-lbl');
     btn.disabled = true;
+    lbl.textContent = '+10 Sent!';
+    btn.style.opacity = '0.7';
     setTimeout(() => {
-      btn.innerHTML = '<span class="emoji">⚡</span> Give Aura';
+      lbl.textContent = 'Give Aura';
       btn.disabled = false;
-      btn.style.color = '';
+      btn.style.opacity = '';
     }, 2000);
   }
 
   function toggleFollow(btn) {
-    const isFollowing = btn.classList.contains('following');
-    btn.classList.toggle('following');
-    btn.textContent = isFollowing ? 'Follow' : 'Following';
+    const following = btn.classList.toggle('following');
+    btn.textContent = following ? 'Following' : 'Follow';
   }
 </script>
 </body>
