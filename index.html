@@ -11,6 +11,8 @@
 <title>FeedMe UQ</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
 
 <style>
@@ -269,6 +271,33 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--md-outline-var);border-radius:2px}
+
+/* ══ MAP PAGE ══ */
+#page-map{padding:0;overflow:hidden}
+#page-map .page-inner{height:100%;display:flex;flex-direction:column}
+#mapContainer{flex:1;position:relative;overflow:hidden}
+#leafletMap{width:100%;height:100%}
+.map-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--md-background);gap:12px;z-index:2}
+.map-empty-icon{font-size:3rem}
+.map-empty-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.map-empty-body{font-size:.82rem;color:var(--md-on-surface-var);text-align:center;padding:0 32px;line-height:1.5}
+/* legend */
+.map-legend{position:absolute;bottom:16px;left:16px;background:var(--md-surface);border:1px solid var(--md-outline-var);border-radius:14px;padding:10px 14px;z-index:1000;box-shadow:var(--e2);font-size:.72rem;display:flex;flex-direction:column;gap:5px;pointer-events:all}
+.ml-toggle{display:flex;align-items:center;gap:7px;font-weight:600;cursor:pointer;padding-top:6px;margin-top:3px;border-top:1px solid var(--md-outline-var);color:var(--md-on-surface-var);user-select:none}
+.ml-toggle:active{opacity:.7}
+.ml-check{width:16px;height:16px;border-radius:4px;border:2px solid var(--md-outline);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .15s;background:var(--md-surface)}
+.ml-check.on{background:var(--md-primary);border-color:var(--md-primary);color:white}
+.ml-row{display:flex;align-items:center;gap:7px;font-weight:600}
+.ml-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.ml-today{background:#C62828}.ml-tomorrow{background:#E65100}.ml-soon{background:#2E7D32}.ml-past{background:#9E9E9E}
+/* highlighted pin pulse */
+@keyframes pinPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,.7)}70%{box-shadow:0 0 0 10px rgba(255,193,7,0)}}
+.pin-highlight{animation:pinPulse 1.2s ease-out 3}
+/* location row clickable */
+.dr.loc-link{cursor:pointer;transition:background .15s}
+.dr.loc-link:hover,.dr.loc-link:active{background:var(--md-primary-container)}
+.dr.loc-link .dv{color:var(--md-primary);text-decoration:underline;text-underline-offset:3px}
+
 </style>
 </head>
 <body>
@@ -347,6 +376,30 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
       </button>
     </div>
 
+
+    <!-- MAP -->
+    <div class="page" id="page-map">
+      <div style="height:100%;display:flex;flex-direction:column">
+        <div id="mapContainer" style="flex:1;position:relative">
+          <div id="leafletMap"></div>
+          <div class="map-empty" id="mapEmpty">
+            <div class="map-empty-icon">🗺️</div>
+            <div class="map-empty-title">No events to map</div>
+            <div class="map-empty-body">Run a scan first to see event locations pinned on the map.</div>
+          </div>
+          <div class="map-legend" id="mapLegend" style="display:none">
+            <div class="ml-row"><div class="ml-dot ml-today"></div>Today</div>
+            <div class="ml-row"><div class="ml-dot ml-tomorrow"></div>Tomorrow</div>
+            <div class="ml-row"><div class="ml-dot ml-soon"></div>Upcoming</div>
+            <div class="ml-row"><div class="ml-dot ml-past"></div>Past</div>
+            <div class="ml-toggle" id="mlHidePastBtn" onclick="toggleMapHidePast()">
+              <div class="ml-check" id="mlHideCheck"></div>Hide past
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="settings-list">
@@ -398,6 +451,9 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
   <nav class="bottom-nav">
     <button class="nav-item active" id="nav-home" onclick="goPage('home')">
       <div class="nav-pill">🏠</div><span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nav-map" onclick="goPage('map')">
+      <div class="nav-pill">🗺️</div><span class="nav-label">Map</span>
     </button>
     <button class="nav-item" id="nav-scan" onclick="goPage('scan')">
       <div class="nav-pill">🔍</div><span class="nav-label">Scan</span>
@@ -504,6 +560,7 @@ function goPage(name) {
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   document.getElementById('fab').style.display = name==='home'?'flex':'none';
+  if(name==='map') initMap();
 }
 function goScan(){ goPage('scan'); }
 
@@ -629,18 +686,22 @@ function showLastScan(d) {
 }
 
 // ── BOTTOM SHEET ──────────────────────────────────────────────────────────
-function openSheet(i) {
+function openSheet(i, highlightOnMap=false) {
   const e=S.events[i]; if(!e) return;
   const soc=SOCIETIES.find(s=>s.handle===e.handle)||{};
   const url=e.instagram_url||`https://www.instagram.com/${e.handle}/`;
+  const u=getUrgency(e.date);
+  const stripeStyle=({today:'background:linear-gradient(90deg,#C62828,#EF5350)',tomorrow:'background:linear-gradient(90deg,#E65100,#FFA726)',soon:'background:linear-gradient(90deg,#2E7D32,#66BB6A)',past:'background:linear-gradient(90deg,#757575,#BDBDBD)'})[u]||'';
+  const hasCoords = S.eventCoords && S.eventCoords[i];
+  const locClickable = hasCoords || true; // always show link to map tab
   document.getElementById('sheetContent').innerHTML=`
-    <div class="sh-stripe"></div>
+    <div class="sh-stripe" style="${stripeStyle}"></div>
     <div class="sh-soc">${soc.emoji||'🎓'} ${esc(e.society)}</div>
     <div class="sh-title">${esc(e.title)}</div>
     <div class="sh-desc">${esc(e.description||'No description available.')}</div>
     <div class="sh-rows">
       ${e.date?`<div class="dr"><div class="di">📅</div><div><div class="dl">Date</div><div class="dv">${esc(e.date)}</div></div></div>`:''}
-      ${e.location?`<div class="dr"><div class="di">📍</div><div><div class="dl">Location</div><div class="dv">${esc(e.location)}</div></div></div>`:''}
+      ${e.location?`<div class="dr loc-link" onclick="goToMapPin(${i})" title="View on map"><div class="di">📍</div><div><div class="dl">Location — tap to view on map</div><div class="dv">${esc(e.location)}</div></div></div>`:''}
       ${e.food?`<div class="dr"><div class="di">🍕</div><div><div class="dl">Food on offer</div><div class="dv">${esc(e.food)}</div></div></div>`:''}
       <div class="dr"><div class="di">🤖</div><div><div class="dl">AI Confidence</div><div class="dv" style="text-transform:capitalize">${e.confidence||'unknown'}</div></div></div>
     </div>
@@ -649,6 +710,13 @@ function openSheet(i) {
   document.getElementById('sheet').classList.add('open');
 }
 function closeSheet(){ document.getElementById('backdrop').classList.remove('open'); document.getElementById('sheet').classList.remove('open'); }
+
+function goToMapPin(i) {
+  closeSheet();
+  goPage('map');
+  // Wait for map to init then highlight
+  setTimeout(() => highlightMapPin(i), 350);
+}
 
 // ── SNACKBAR ──────────────────────────────────────────────────────────────
 let snackT;
@@ -828,6 +896,186 @@ function parseAndShow(raw) {
   showLastScan(new Date());
   if(ev.length){ snack(`🍕 Found ${ev.length} food event${ev.length!==1?'s':''}!`); setTimeout(()=>goPage('home'),1200); }
   else snack('No food events found right now');
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────
+// UQ campus coords as fallback geocode table
+const UQ_LOCATIONS = {
+  'great court': [-27.4975, 153.0137],
+  'union complex': [-27.4980, 153.0130],
+  'hawken': [-27.4990, 153.0118],
+  'itlc': [-27.4982, 153.0145],
+  'parnell': [-27.4978, 153.0155],
+  'forgan smith': [-27.4968, 153.0125],
+  'colin clark': [-27.4985, 153.0135],
+  'tc beirne': [-27.4970, 153.0138],
+  'mansergh shaw': [-27.4995, 153.0128],
+  'priestley': [-27.4993, 153.0148],
+  'herston': [-27.4545, 153.0290],
+  'st lucia': [-27.4975, 153.0137],
+  'campbell place': [-27.4977, 153.0132],
+  'merlo': [-27.4981, 153.0131],
+  'sir llew edwards': [-27.4972, 153.0142],
+  'education building': [-27.4988, 153.0120],
+  'nursing': [-27.4966, 153.0118],
+  'school of nursing': [-27.4966, 153.0118],
+  'brisbane city': [-27.4698, 153.0251],
+  '308 queen': [-27.4698, 153.0251],
+};
+
+const PIN_COLORS = {
+  today:    '#C62828',
+  tomorrow: '#E65100',
+  soon:     '#2E7D32',
+  past:     '#9E9E9E',
+  unknown:  '#6B35A0',
+};
+
+let mapInstance   = null;
+let mapMarkers    = [];   // parallel to S.events
+let mapInited     = false;
+let mapHidePast   = true;
+
+function geocodeLocation(locStr) {
+  if (!locStr) return null;
+  const l = locStr.toLowerCase();
+  for (const [key, coords] of Object.entries(UQ_LOCATIONS)) {
+    if (l.includes(key)) return coords;
+  }
+  // Default: scatter around UQ St Lucia with small jitter
+  return [-27.4975 + (Math.random()-0.5)*0.008, 153.0137 + (Math.random()-0.5)*0.008];
+}
+
+function makePinIcon(color, highlight=false) {
+  const fill   = highlight ? '#FFC107' : color;
+  const stroke = highlight ? '#E65100' : 'white';
+  const inner  = highlight ? '#fff8e1' : 'white';
+  const size   = highlight ? [34, 46] : [28, 38];
+  const anchor = highlight ? [17, 46] : [14, 38];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size[0]}" height="${size[1]}" viewBox="0 0 28 38">
+    <path d="M14 2C7.373 2 2 7.373 2 14c0 9.333 12 22 12 22S26 23.333 26 14C26 7.373 20.627 2 14 2z" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+    <circle cx="14" cy="14" r="5" fill="${inner}" opacity="0.95"/>
+  </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: size,
+    iconAnchor: anchor,
+    popupAnchor: [0, -anchor[1]],
+  });
+}
+
+function toggleMapHidePast() {
+  mapHidePast = !mapHidePast;
+  const check = document.getElementById('mlHideCheck');
+  check.classList.toggle('on', mapHidePast);
+  check.textContent = mapHidePast ? '✓' : '';
+  // Refresh markers visibility
+  const evs = S.events;
+  mapMarkers.forEach((m, idx) => {
+    if (!m) return;
+    const isPast = getUrgency(evs[idx].date) === 'past';
+    if (mapHidePast && isPast) {
+      mapInstance.removeLayer(m);
+    } else {
+      m.addTo(mapInstance);
+    }
+  });
+}
+
+function initMap() {
+  const container = document.getElementById('leafletMap');
+  const emptyEl   = document.getElementById('mapEmpty');
+  const legendEl  = document.getElementById('mapLegend');
+
+  if (!mapInstance) {
+    mapInstance = L.map('leafletMap', {
+      zoomControl: true,
+      attributionControl: true,
+    }).setView([-27.4975, 153.0137], 15);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(mapInstance);
+  }
+
+  // Clear old markers
+  mapMarkers.forEach(m => m && mapInstance.removeLayer(m));
+  mapMarkers = [];
+  S.eventCoords = [];
+
+  const evs = S.events;
+  if (!evs || !evs.length) {
+    emptyEl.style.display = 'flex';
+    legendEl.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  legendEl.style.display = 'flex';
+
+  const bounds = [];
+
+  evs.forEach((e, i) => {
+    const coords = geocodeLocation(e.location);
+    S.eventCoords[i] = coords;
+    if (!coords) { mapMarkers.push(null); return; }
+
+    const u = getUrgency(e.date);
+    const color = PIN_COLORS[u] || PIN_COLORS.unknown;
+    const marker = L.marker(coords, { icon: makePinIcon(color) })
+      .addTo(mapInstance)
+      .on('click', () => { openSheet(i); });
+
+    mapMarkers.push(marker);
+    bounds.push(coords);
+  });
+
+  if (bounds.length) {
+    mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+  }
+
+  // Apply hide-past default and sync checkbox
+  const hideCheck = document.getElementById('mlHideCheck');
+  if (hideCheck) {
+    hideCheck.classList.toggle('on', mapHidePast);
+    hideCheck.textContent = mapHidePast ? '✓' : '';
+  }
+  if (mapHidePast) {
+    mapMarkers.forEach((m, idx) => {
+      if (!m) return;
+      if (getUrgency(S.events[idx].date) === 'past') mapInstance.removeLayer(m);
+    });
+  }
+  // Invalidate size in case container was hidden
+  setTimeout(() => mapInstance.invalidateSize(), 100);
+  mapInited = true;
+}
+
+function highlightMapPin(i) {
+  if (!mapInstance) { initMap(); }
+  setTimeout(() => {
+    const marker = mapMarkers[i];
+    const coords = S.eventCoords && S.eventCoords[i];
+    if (!coords) {
+      snack('📍 No location data for this event');
+      return;
+    }
+    // Re-render all markers to clear previous highlight
+    const evs = S.events;
+    mapMarkers.forEach((m, idx) => {
+      if (!m) return;
+      const u = getUrgency(evs[idx].date);
+      const color = PIN_COLORS[u] || PIN_COLORS.unknown;
+      m.setIcon(makePinIcon(color, idx === i));
+    });
+    // Pan/zoom to pin
+    mapInstance.setView(coords, 17, { animate: true, duration: 0.5 });
+    mapInstance.invalidateSize();
+    // Open sheet after brief delay
+    setTimeout(() => openSheet(i), 400);
+  }, 150);
 }
 
 function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s||''));return d.innerHTML;}
