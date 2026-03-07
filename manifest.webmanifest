@@ -1,7 +1,7 @@
 {
-  "name": "UQ Free Food Finder",
-  "short_name": "FoodFinder",
-  "description": "Find UQ society events with free food — powered by Claude AI",
+  "name": "FeedMe UQ",
+  "short_name": "FeedMe UQ",
+  "description": "Find events with free food in UQ societies",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
