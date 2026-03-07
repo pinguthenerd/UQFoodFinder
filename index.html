@@ -137,6 +137,27 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
 .ecard:active{transform:scale(.98)}
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .card-stripe{height:5px;background:linear-gradient(90deg,var(--md-primary),color-mix(in srgb,var(--md-primary) 60%,white))}
+.stripe-today{background:linear-gradient(90deg,#C62828,#EF5350) !important}
+.stripe-tomorrow{background:linear-gradient(90deg,#E65100,#FFA726) !important}
+.stripe-soon{background:linear-gradient(90deg,#2E7D32,#66BB6A) !important}
+.stripe-past{background:linear-gradient(90deg,#757575,#BDBDBD) !important}
+.filter-bar{display:flex;align-items:center;gap:8px;padding:0 16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex-shrink:0;padding-bottom:4px}
+.filter-bar::-webkit-scrollbar{display:none}
+.fchip{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:.78rem;font-weight:700;border:1.5px solid var(--md-outline-var);background:var(--md-surface);color:var(--md-on-surface-var);white-space:nowrap;cursor:pointer;transition:all .18s var(--ease);flex-shrink:0;font-family:'Nunito',sans-serif}
+.fchip.active{background:var(--md-primary-container);color:var(--md-on-primary-container);border-color:var(--md-primary)}
+.fchip:active{transform:scale(.95)}
+.fchip-sep{width:1px;height:24px;background:var(--md-outline-var);flex-shrink:0;margin:0 2px}
+.urgency-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.ub-today{background:#FFEBEE;color:#C62828}
+.ub-tomorrow{background:#FFF3E0;color:#E65100}
+.ub-soon{background:#E8F5E9;color:#2E7D32}
+.ub-past{background:#F5F5F5;color:#9E9E9E}
+[data-theme="dark"] .ub-today{background:#4E1010;color:#EF9A9A}
+[data-theme="dark"] .ub-tomorrow{background:#4E2600;color:#FFCC80}
+[data-theme="dark"] .ub-soon{background:#1B3A1D;color:#A5D6A7}
+[data-theme="dark"] .ub-past{background:#2A2A2A;color:#9E9E9E}
+.ecard.is-past{opacity:.55}
+.ecard.is-past .card-title{color:var(--md-on-surface-var)}
 .card-body{padding:16px}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
 .soc-badge{display:inline-flex;align-items:center;gap:5px;background:var(--md-primary-container);color:var(--md-on-primary-container);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.03em}
@@ -278,6 +299,13 @@ body{font-family:'Nunito',sans-serif;background:var(--md-background);color:var(-
       <div class="sec-header" id="resHdr" style="display:none">
         <span class="sec-title">Upcoming food events</span>
         <span class="cnt-badge" id="cntBadge">0</span>
+      </div>
+      <div class="filter-bar" id="filterBar" style="display:none;margin:4px 0 8px">
+        <button class="fchip active" id="fc-upcoming" onclick="setFilter('upcoming')">📅 Upcoming</button>
+        <button class="fchip" id="fc-all" onclick="setFilter('all')">🗓️ All</button>
+        <div class="fchip-sep"></div>
+        <button class="fchip active" id="fc-soonest" onclick="setSort('soonest')">⬆ Soonest</button>
+        <button class="fchip" id="fc-latest" onclick="setSort('latest')">⬇ Latest</button>
       </div>
       <div class="event-list" id="eventList"></div>
       <div class="empty" id="emptyState">
@@ -435,6 +463,8 @@ const SOCIETIES = [
 // ── STATE ─────────────────────────────────────────────────────────────────
 const S = {
   page: 'home',
+  filterMode: 'upcoming',
+  sortMode: 'soonest',
   theme: localStorage.getItem('uq_theme') || 'light',
   selected: new Set(SOCIETIES.map(s=>s.handle)),
   events: tryParse(localStorage.getItem('uq_events'), []),
@@ -500,19 +530,80 @@ function toggleAll() {
 }
 
 // ── EVENTS RENDER ─────────────────────────────────────────────────────────
+// DATE HELPERS
+function parseEventDate(dateStr) {
+  if (!dateStr || dateStr === 'TBC') return null;
+  const d = new Date(dateStr);
+  return isNaN(d) ? null : d;
+}
+function getUrgency(dateStr) {
+  const d = parseEventDate(dateStr);
+  if (!d) return 'unknown';
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowStart = new Date(todayStart); tomorrowStart.setDate(tomorrowStart.getDate()+1);
+  const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (eventDay < todayStart) return 'past';
+  if (eventDay.getTime() === todayStart.getTime()) return 'today';
+  if (eventDay.getTime() === tomorrowStart.getTime()) return 'tomorrow';
+  return 'soon';
+}
+function urgencyStripeClass(u){return{today:'stripe-today',tomorrow:'stripe-tomorrow',soon:'stripe-soon',past:'stripe-past'}[u]||'';}
+function urgencyBadgeClass(u){return{today:'ub-today',tomorrow:'ub-tomorrow',soon:'ub-soon',past:'ub-past'}[u]||'ub-past';}
+function urgencyLabel(u){return{today:'🔴 Today',tomorrow:'🟡 Tomorrow',soon:'🟢 Upcoming',past:'⬛ Past'}[u]||'';}
+
+// SORT / FILTER CONTROLS
+function setFilter(mode) {
+  S.filterMode = mode;
+  document.getElementById('fc-upcoming').classList.toggle('active', mode==='upcoming');
+  document.getElementById('fc-all').classList.toggle('active', mode==='all');
+  renderEvents(S.events);
+}
+function setSort(mode) {
+  S.sortMode = mode;
+  document.getElementById('fc-soonest').classList.toggle('active', mode==='soonest');
+  document.getElementById('fc-latest').classList.toggle('active', mode==='latest');
+  renderEvents(S.events);
+}
+function applyFilterSort(ev) {
+  let items = ev.map(e => ({...e, _urgency: getUrgency(e.date), _ts: parseEventDate(e.date)?.getTime()||Infinity}));
+  if (S.filterMode === 'upcoming') items = items.filter(e => e._urgency !== 'past');
+  items.sort((a,b) => {
+    const aP = a._urgency==='past', bP = b._urgency==='past';
+    if (aP !== bP) return aP ? 1 : -1;
+    return S.sortMode === 'latest' ? (b._ts||0)-(a._ts||0) : (a._ts||Infinity)-(b._ts||Infinity);
+  });
+  return items;
+}
+
 function renderEvents(ev) {
   const list=document.getElementById('eventList'), empty=document.getElementById('emptyState');
   const hdr=document.getElementById('resHdr'), badge=document.getElementById('cntBadge');
-  if(!ev||!ev.length){ list.innerHTML=''; empty.style.display='block'; hdr.style.display='none'; return; }
-  empty.style.display='none'; hdr.style.display='flex'; badge.textContent=ev.length;
-  list.innerHTML = ev.map((e,i)=>{
+  const filterBar=document.getElementById('filterBar');
+  if(!ev||!ev.length){ list.innerHTML=''; empty.style.display='block'; hdr.style.display='none'; filterBar.style.display='none'; return; }
+  empty.style.display='none'; hdr.style.display='flex'; filterBar.style.display='flex';
+
+  const items = applyFilterSort(ev);
+  badge.textContent = items.length;
+
+  if (!items.length) {
+    list.innerHTML=`<div class="empty" style="padding:32px 16px"><div class="empty-icon">📭</div><div class="empty-title">No upcoming events</div><p class="empty-body">Switch to <strong>All</strong> to see past events too.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = items.map((e,i)=>{
     const soc=SOCIETIES.find(s=>s.handle===e.handle)||{};
-    return `<div class="ecard" style="animation-delay:${i*55}ms" onclick="openSheet(${i})">
-      <div class="card-stripe"></div>
+    const u=e._urgency;
+    const origIdx=S.events.findIndex(x=>x.title===e.title&&x.handle===e.handle);
+    return `<div class="ecard${u==='past'?' is-past':''}" style="animation-delay:${i*45}ms" onclick="openSheet(${origIdx})">
+      <div class="card-stripe ${urgencyStripeClass(u)}"></div>
       <div class="card-body">
         <div class="card-top">
           <div class="soc-badge">${soc.emoji||'🎓'} ${esc(e.society)}</div>
-          <div class="conf-dot c${(e.confidence||'l')[0]}" title="${e.confidence} confidence"></div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            ${u&&u!=='unknown'?`<span class="urgency-badge ${urgencyBadgeClass(u)}">${urgencyLabel(u)}</span>`:''}
+            <div class="conf-dot c${(e.confidence||'l')[0]}" title="${e.confidence} confidence"></div>
+          </div>
         </div>
         <div class="card-title">${esc(e.title)}</div>
         <div class="card-desc">${esc(e.description||'')}</div>
@@ -530,6 +621,7 @@ function renderEvents(ev) {
     </div>`;
   }).join('');
 }
+
 
 function showLastScan(d) {
   document.getElementById('lastScan').style.display='flex';
