@@ -597,7 +597,12 @@ async function startScan() {
   setSt('Agent starting…','Connecting to Claude AI',true,'ind');
   addLog(`Scanning ${socs.length} societies`,'');
 
-  try { await runAgent(socs); }
+  try { 
+     //await runAgent(socs);
+     // DEMO MODE — remove this block when real scanning is ready
+      parseAndShow(JSON.stringify(DEMO_EVENTS));
+      return;
+  }
   catch(err) {
     addLog('Error: '+err.message,'e');
     setSt('Scan failed',err.message.slice(0,60),false,0);
@@ -734,6 +739,572 @@ function parseAndShow(raw) {
 }
 
 function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s||''));return d.innerHTML;}
+
+
+const DEMO_EVENTS = [
+  {
+    "society": "UQ Union",
+    "handle": "uqunion",
+    "title": "O-Week Free Breakfast — Morning Marmalade",
+    "description": "UQU's flagship Morning Marmalade breakfast service kicks off for Semester 1. Free pancakes, muesli cups, coffee and toast served daily from the Union Complex ground floor. Bring your student ID to scan at the door.",
+    "date": "Monday 24 February 2026",
+    "location": "Union Complex Ground Floor, St Lucia",
+    "food": "Free pancakes, muesli cups, toast and coffee",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqunion/"
+  },
+  {
+    "society": "UQ Union",
+    "handle": "uqunion",
+    "title": "Kampus Kitchen Free Dinner — Week 1",
+    "description": "UQU's Kampus Kitchen free dinner service is back for Semester 1. Free frozen meals available to heat up on site — no questions asked, just bring your student ID. Running Monday to Friday until stocks last.",
+    "date": "Monday 24 February 2026",
+    "location": "Union Complex Ground Floor, St Lucia",
+    "food": "Free frozen meals (heat on site)",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqunion/"
+  },
+  {
+    "society": "UQ Union",
+    "handle": "uqunion",
+    "title": "Market Day — Free Snacks & Society Stalls",
+    "description": "UQU's famous Market Day returns to Campbell Place with society stalls, giveaways and free snacks. Come meet 200+ clubs and societies, grab a free sausage sizzle and score some merch. One of the biggest events of O-Week.",
+    "date": "Wednesday 26 February 2026",
+    "location": "Campbell Place, St Lucia",
+    "food": "Free sausage sizzle, snacks and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqunion/"
+  },
+  {
+    "society": "UQ Computing Society",
+    "handle": "uqcomputingsociety",
+    "title": "UQCS O-Week Free Pizza Night",
+    "description": "UQCS kicks off the semester with their legendary free pizza night. Come meet the execs, find out what's on this semester, and grab a slice. As their club description says — 'oodles of free pizza' is basically guaranteed.",
+    "date": "Thursday 27 February 2026",
+    "location": "ITLC Building (78), St Lucia",
+    "food": "Free pizza",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqcomputingsociety/"
+  },
+  {
+    "society": "UQ Computing Society",
+    "handle": "uqcomputingsociety",
+    "title": "UQCS Industry Night — Catered",
+    "description": "UQCS hosts their first industry night of the semester with sponsor companies presenting grad roles and internships. Light catering provided throughout. Great opportunity to network over food with top tech employers.",
+    "date": "Wednesday 18 March 2026",
+    "location": "Mansergh Shaw Building (45), St Lucia",
+    "food": "Catered — finger food and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqcomputingsociety/"
+  },
+  {
+    "society": "UQ Computing Society",
+    "handle": "uqcomputingsociety",
+    "title": "UQCS Hackathon — Free Meals All Weekend",
+    "description": "UQCS annual Hackathon is back. All registered participants get free meals provided throughout the entire 24-hour event — breakfast, lunch, dinner and midnight snacks included. Sign up on the UQCS website.",
+    "date": "Saturday 4 April 2026",
+    "location": "ITLC Building (78), St Lucia",
+    "food": "Free meals all weekend — breakfast, lunch, dinner, snacks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqcomputingsociety/"
+  },
+  {
+    "society": "UQ Engineering Undergraduate Society",
+    "handle": "uqeus",
+    "title": "UQEUS Welcome BBQ",
+    "description": "UQEUS kicks off the semester with a free welcome BBQ for all engineering students. Sausages, burgers and cold drinks on the lawn outside Hawken Building. A great chance to meet fellow engineers before classes get intense.",
+    "date": "Friday 28 February 2026",
+    "location": "Hawken Engineering Building (50) Lawn, St Lucia",
+    "food": "Free BBQ — sausages, burgers and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqeus/"
+  },
+  {
+    "society": "UQ Engineering Undergraduate Society",
+    "handle": "uqeus",
+    "title": "UQEUS Mid-Semester BBQ Fundraiser",
+    "description": "UQEUS mid-semester BBQ is back — a classic sausage sizzle near the Union building to fuel you through the mid-sem grind. Gold coin donation suggested but no one is turned away. Volunteers welcome.",
+    "date": "Wednesday 8 April 2026",
+    "location": "Outside UQ Union Building, St Lucia",
+    "food": "Sausage sizzle — gold coin donation",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqeus/"
+  },
+  {
+    "society": "UQ Law Society",
+    "handle": "uqlawsociety",
+    "title": "UQ Law Society O-Week Welcome Drinks & Canapés",
+    "description": "UQ Law Society's O-Week welcome function for new and returning law students. Canapés and drinks provided in a relaxed networking environment. Meet the exec team, find out about clerkship resources and upcoming events.",
+    "date": "Tuesday 25 February 2026",
+    "location": "TC Beirne School of Law Building (1), St Lucia",
+    "food": "Canapés and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqlawsociety/"
+  },
+  {
+    "society": "UQ Law Society",
+    "handle": "uqlawsociety",
+    "title": "Law Society Clerkship Info Night — Catered",
+    "description": "UQ Law Society hosts their annual clerkship information night with firms in attendance. Catering provided throughout the evening. Essential for penultimate-year students targeting summer clerkships.",
+    "date": "Thursday 19 March 2026",
+    "location": "TC Beirne School of Law, Moot Court, St Lucia",
+    "food": "Catered — finger food and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqlawsociety/"
+  },
+  {
+    "society": "UQ Medical Society",
+    "handle": "uqmedsoc",
+    "title": "UQ MedSoc O-Week BBQ",
+    "description": "UQ Medical Society's annual O-Week BBQ for all medical students. Free sausage sizzle on the Herston campus lawn. A relaxed way to kick off the year and meet fellow med students across all year levels.",
+    "date": "Friday 27 February 2026",
+    "location": "Herston Health Sciences Campus Lawn",
+    "food": "Free BBQ — sausages and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqmedsoc/"
+  },
+  {
+    "society": "UQ Medical Society",
+    "handle": "uqmedsoc",
+    "title": "MedSoc Mid-Semester Snack Attack",
+    "description": "UQ MedSoc is running a free snack trolley through the Herston library during mid-semester exams. Grab a snack and a coffee to power through study. Funded by your membership fees — all med students welcome.",
+    "date": "Tuesday 14 April 2026",
+    "location": "Herston Health Sciences Library",
+    "food": "Free snacks, fruit and coffee",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqmedsoc/"
+  },
+  {
+    "society": "UQ Business Association",
+    "handle": "uqbaofficial",
+    "title": "UQBA Welcome Night — Free Catering",
+    "description": "UQBA's flagship welcome night for all BEL faculty students. Free catering throughout the evening, plus a chance to meet the exec team and sponsor companies. UQBA was UQU's Club of the Year 2024 — expect a polished event.",
+    "date": "Wednesday 25 February 2026",
+    "location": "Colin Clark Building (39) Auditorium, St Lucia",
+    "food": "Free catering — finger food and soft drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqbaofficial/"
+  },
+  {
+    "society": "UQ Business Association",
+    "handle": "uqbaofficial",
+    "title": "UQBA Industry Breakfast",
+    "description": "UQBA's popular industry breakfast series is back. Enjoy a free breakfast while hearing from professionals across finance, consulting and marketing. Limited spots — RSVP via UQBA's Instagram link in bio.",
+    "date": "Friday 20 March 2026",
+    "location": "UQ Brisbane City Campus, 308 Queen Street",
+    "food": "Free breakfast — pastries, fruit, coffee and juice",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqbaofficial/"
+  },
+  {
+    "society": "UQ Science Students Society",
+    "handle": "uqsciencesociety",
+    "title": "UQ Science Society Welcome BBQ",
+    "description": "UQ Science Students Society welcomes all science students with a free BBQ on the Great Court lawn. Sausages, veggie options and cold drinks. Come find out what events are planned for the semester.",
+    "date": "Thursday 26 February 2026",
+    "location": "Great Court Lawn, St Lucia",
+    "food": "Free BBQ — sausages, veggie sausages and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqsciencesociety/"
+  },
+  {
+    "society": "UQ Science Students Society",
+    "handle": "uqsciencesociety",
+    "title": "Science Society Mid-Sem Study Snacks",
+    "description": "Feeling the mid-sem pressure? UQ Science Society is running a free snack station outside the Parnell Building during week 7. Grab a free snack pack and recharge between study sessions.",
+    "date": "Wednesday 8 April 2026",
+    "location": "Outside Parnell Building (7), St Lucia",
+    "food": "Free snack packs — chips, muesli bars, fruit",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqsciencesociety/"
+  },
+  {
+    "society": "UQ Mathematics Student Society",
+    "handle": "uq.mss",
+    "title": "UQ Maths Society Pizza & Problem Night",
+    "description": "UQ Maths Student Society's weekly pizza and problem-solving night. Bring your toughest maths problems or just come for the free pizza. Open to all students — no maths degree required.",
+    "date": "Tuesday 10 March 2026",
+    "location": "Priestley Building (67) Room 440, St Lucia",
+    "food": "Free pizza",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uq.mss/"
+  },
+  {
+    "society": "UQ Debating Society",
+    "handle": "uqds",
+    "title": "UQDS Welcome Social — Pizza and Debates",
+    "description": "UQ Debating Society hosts their welcome social for new and returning members. Free pizza provided while you watch demonstration debates and learn how to get involved. No experience needed — all welcome.",
+    "date": "Monday 2 March 2026",
+    "location": "Sir Llew Edwards Building (14) Room 214, St Lucia",
+    "food": "Free pizza and soft drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqds/"
+  },
+  {
+    "society": "UQ Film Production Society",
+    "handle": "uqfps",
+    "title": "UQFPS Screening Night — Snacks Provided",
+    "description": "UQ Film Production Society hosts their semester opening screening night. Watch short films made by UQ students last semester, vote for your favourite, and enjoy free snacks and popcorn throughout.",
+    "date": "Friday 6 March 2026",
+    "location": "Forgan Smith Building (1) Theatre, St Lucia",
+    "food": "Free popcorn and snacks",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqfps/"
+  },
+  {
+    "society": "UQ Games Society",
+    "handle": "uqgames",
+    "title": "UQ Games Society LAN Party — Pizza Run",
+    "description": "UQ Games Society's semester opening LAN party. Free pizza ordered mid-session for all attendees. Bring your laptop or use the society's setup. All games welcome — tabletop, PC and console.",
+    "date": "Saturday 7 March 2026",
+    "location": "ITLC Building (78) Lab, St Lucia",
+    "food": "Free pizza mid-session",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqgames/"
+  },
+  {
+    "society": "UQ Photography Society",
+    "handle": "uqphotosociety",
+    "title": "UQ Photo Society Welcome Shoot & Morning Tea",
+    "description": "UQ Photography Society kicks off the semester with a campus photo walk followed by a free morning tea. Bring any camera — phone cameras welcome. Finish at the Great Court for tea, coffee and snacks.",
+    "date": "Sunday 1 March 2026",
+    "location": "Meet at Great Court, St Lucia",
+    "food": "Free morning tea — coffee, tea, biscuits and fruit",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqphotosociety/"
+  },
+  {
+    "society": "UQ Vegan Society",
+    "handle": "uqvegansociety",
+    "title": "UQ Vegan Society Free Plant-Based BBQ",
+    "description": "UQ Vegan Society is hosting a free plant-based BBQ on the Great Court lawn. Try vegan sausages, burgers and salads — all completely free. A great event whether you're vegan-curious or fully committed.",
+    "date": "Wednesday 11 March 2026",
+    "location": "Great Court Lawn, St Lucia",
+    "food": "Free plant-based BBQ — vegan sausages, burgers and salads",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqvegansociety/"
+  },
+  {
+    "society": "UQ Vegan Society",
+    "handle": "uqvegansociety",
+    "title": "Vegan Bake Sale & Tasting",
+    "description": "UQ Vegan Society's famous bake sale is back. Try free samples of vegan cakes, cookies and slices baked by society members. Items also available to purchase. All proceeds go to an animal welfare charity.",
+    "date": "Wednesday 29 April 2026",
+    "location": "Outside Merlo Coffee, Union Complex, St Lucia",
+    "food": "Free tasting samples — vegan cakes, cookies and slices",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqvegansociety/"
+  },
+  {
+    "society": "UQ Hindu Cultural Society",
+    "handle": "uq.hcs",
+    "title": "Holi Festival — Free Indian Food & Colours",
+    "description": "UQ Hindu Cultural Society celebrates Holi with a free colour festival on campus. Free Indian street food including samosas, chai, and sweets provided. Come in white clothes and get ready to celebrate the festival of colours.",
+    "date": "Saturday 14 March 2026",
+    "location": "UQ Great Court, St Lucia",
+    "food": "Free Indian street food — samosas, chai, gulab jamun and sweets",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uq.hcs/"
+  },
+  {
+    "society": "UQ Hindu Cultural Society",
+    "handle": "uq.hcs",
+    "title": "Diwali Celebration Dinner",
+    "description": "UQ Hindu Cultural Society's annual Diwali celebration. Free traditional Indian dinner served to all attendees including dal, rice, curries, and mithai sweets. Cultural performances throughout the evening.",
+    "date": "Friday 23 October 2026",
+    "location": "UQ Union Complex Function Room, St Lucia",
+    "food": "Free traditional Indian dinner — dal, curries, rice and mithai",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uq.hcs/"
+  },
+  {
+    "society": "UQ Malaysian Students' Association",
+    "handle": "uqmsa",
+    "title": "UQMSA Welcome Night — Malaysian Food Spread",
+    "description": "UQMSA's O-Week welcome night for Malaysian students and friends of Malaysian culture. Authentic Malaysian dishes including nasi lemak, rendang, satay and kuih provided free. One of the most popular food events on campus.",
+    "date": "Friday 27 February 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free Malaysian food — nasi lemak, rendang, satay, kuih",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqmsa/"
+  },
+  {
+    "society": "UQ Malaysian Students' Association",
+    "handle": "uqmsa",
+    "title": "UQMSA Malaysian Food Night",
+    "description": "UQMSA's mid-semester Malaysian Food Night is back. Come enjoy free authentic Malaysian cuisine cooked by society members. Dishes vary each year — expect laksa, char kway teow, and assorted kuih.",
+    "date": "Saturday 25 April 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free Malaysian cuisine — laksa, char kway teow, kuih",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqmsa/"
+  },
+  {
+    "society": "UQ Korean International Students' Society",
+    "handle": "uqkiss",
+    "title": "UQKISS O-Week Welcome Dinner",
+    "description": "UQ Korean International Students' Society hosts their O-Week welcome dinner for Korean students and Korean culture enthusiasts. Free Korean food including bibimbap, japchae, tteokbokki and Korean fried chicken.",
+    "date": "Saturday 28 February 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free Korean food — bibimbap, japchae, tteokbokki, Korean fried chicken",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqkiss/"
+  },
+  {
+    "society": "UQ Korean International Students' Society",
+    "handle": "uqkiss",
+    "title": "UQKISS Korean Snack Night",
+    "description": "UQKISS hosts a Korean snack night — try a variety of popular Korean snacks, ramyeon and street food. Free entry, free food. Come meet the Korean student community at UQ.",
+    "date": "Friday 3 April 2026",
+    "location": "Union Complex, St Lucia",
+    "food": "Free Korean snacks, ramyeon and street food",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqkiss/"
+  },
+  {
+    "society": "UQ Indonesian Students' Association",
+    "handle": "uqisa",
+    "title": "UQISA Welcome Night — Indonesian Food Feast",
+    "description": "UQISA's O-Week welcome night brings authentic Indonesian flavours to UQ. Free Indonesian food including nasi goreng, mie goreng, satay, and es teh. Open to all students — not just Indonesians!",
+    "date": "Saturday 28 February 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free Indonesian food — nasi goreng, satay, mie goreng, es teh",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqisa/"
+  },
+  {
+    "society": "UQ Indonesian Students' Association",
+    "handle": "uqisa",
+    "title": "UQISA Independence Day Celebration",
+    "description": "UQISA celebrates Indonesian Independence Day with a free cultural evening. Traditional Indonesian food served to all guests including rendang, gado-gado, klepon and various kueh. Cultural performances and games.",
+    "date": "Saturday 15 August 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free Indonesian food — rendang, gado-gado, klepon and kueh",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqisa/"
+  },
+  {
+    "society": "UQ Singapore Students' Society",
+    "handle": "uq.singapore",
+    "title": "UQ Singapore Society Welcome Event — Singaporean Food",
+    "description": "UQ Singapore Students' Society hosts their O-Week welcome with a spread of Singaporean hawker favourites. Expect chicken rice, char kway teow, laksa and kaya toast — all free for attendees.",
+    "date": "Sunday 1 March 2026",
+    "location": "Union Complex, St Lucia",
+    "food": "Free Singaporean hawker food — chicken rice, laksa, kaya toast",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uq.singapore/"
+  },
+  {
+    "society": "UQ Chinese Students' Association",
+    "handle": "officialuqcssa",
+    "title": "UQCSSA Chinese New Year Banquet",
+    "description": "UQCSSA's annual Chinese New Year celebration banquet. Traditional Chinese New Year dishes served including dumplings, noodles, spring rolls and rice cakes. Cultural performances and lucky draw prizes.",
+    "date": "Saturday 7 February 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free Chinese New Year banquet — dumplings, noodles, spring rolls",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/officialuqcssa/"
+  },
+  {
+    "society": "UQ Chinese Students' Association",
+    "handle": "officialuqcssa",
+    "title": "UQCSSA Welcome BBQ",
+    "description": "UQCSSA's welcome BBQ for all Chinese students and friends at the start of Semester 1. Asian-style BBQ skewers, fried rice and soft drinks all provided free. Come meet the community and sign up for events.",
+    "date": "Wednesday 4 March 2026",
+    "location": "Great Court Lawn, St Lucia",
+    "food": "Free Asian BBQ — skewers, fried rice and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/officialuqcssa/"
+  },
+  {
+    "society": "UQ International Students' Society",
+    "handle": "uq.iss",
+    "title": "UQISS International Food Festival",
+    "description": "UQISS hosts their flagship International Food Festival on the Great Court. Students from dozens of countries bring and share their traditional dishes — entirely free to attend. One of the most-loved events on campus all year.",
+    "date": "Saturday 21 March 2026",
+    "location": "Great Court, St Lucia",
+    "food": "Free international food from 20+ countries",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uq.iss/"
+  },
+  {
+    "society": "UQ International Students' Society",
+    "handle": "uq.iss",
+    "title": "UQISS Mid-Semester Comfort Food Night",
+    "description": "Feeling homesick mid-semester? UQISS hosts a comfort food night with dishes representing home for international students. Free food from Asia, the Middle East, Africa and the Americas. All students welcome.",
+    "date": "Friday 17 April 2026",
+    "location": "Union Complex Function Room, St Lucia",
+    "food": "Free international comfort food spread",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uq.iss/"
+  },
+  {
+    "society": "UQU International Collective",
+    "handle": "uqu_international",
+    "title": "International Trivia Night — Free Snacks",
+    "description": "UQU International Collective co-hosts the annual International Trivia Night alongside UQLASA, UQ African Students Association and UQ Scottish Society. Free snacks and drinks throughout. Prize for the winning team.",
+    "date": "Friday 27 March 2026",
+    "location": "UQU Sports Bar, Union Complex, St Lucia",
+    "food": "Free snacks and drinks throughout",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqu_international/"
+  },
+  {
+    "society": "UQU Queer Collective",
+    "handle": "uququeercollective",
+    "title": "Queer Collective Welcome BBQ",
+    "description": "UQU Queer Collective's O-Week welcome BBQ — a free, safe and fun event for LGBTQIA+ students and allies. Sausage sizzle with veggie options, cold drinks and a chill vibe on the Union lawn.",
+    "date": "Thursday 26 February 2026",
+    "location": "UQU Union Lawn, St Lucia",
+    "food": "Free sausage sizzle — meat and veggie options",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uququeercollective/"
+  },
+  {
+    "society": "UQU Queer Collective",
+    "handle": "uququeercollective",
+    "title": "Queer Collective Bake Sale",
+    "description": "The Queer Collective's annual rainbow bake sale is back. Free samples of member-baked goods available, with items also for sale. All proceeds support a local LGBTQIA+ charity. Come grab a treat and show your support.",
+    "date": "Thursday 23 April 2026",
+    "location": "Outside Union Complex, St Lucia",
+    "food": "Free samples — cakes, cookies and slices",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uququeercollective/"
+  },
+  {
+    "society": "UQU Environment Collective",
+    "handle": "uquenvironment",
+    "title": "Environment Collective Free Vegan Lunch",
+    "description": "UQU Environment Collective hosts a free vegan lunch on the Great Court to kick off their semester campaign around sustainable food. Dishes include lentil dhal, rice, salad and seasonal fruit — all locally sourced.",
+    "date": "Wednesday 11 March 2026",
+    "location": "Great Court, St Lucia",
+    "food": "Free vegan lunch — dhal, rice, salad, seasonal fruit",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uquenvironment/"
+  },
+  {
+    "society": "UQU Environment Collective",
+    "handle": "uquenvironment",
+    "title": "Zero Waste BBQ — Sustainable Sausage Sizzle",
+    "description": "UQU Environment Collective runs their zero-waste sausage sizzle using compostable packaging and sustainably sourced sausages. Free entry, gold coin donation for food. All profits fund local environmental projects.",
+    "date": "Wednesday 22 April 2026",
+    "location": "Great Court, St Lucia",
+    "food": "Sustainable sausage sizzle — gold coin donation",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uquenvironment/"
+  },
+  {
+    "society": "UQU Student Rights Collective",
+    "handle": "uqustudentrights",
+    "title": "Student Rights BBQ & Info Stall",
+    "description": "UQU Student Rights Collective hosts a free sausage sizzle alongside their information stall about student rights, SSAF and campus issues. Come grab a free snag and find out how to get involved in student advocacy.",
+    "date": "Wednesday 4 March 2026",
+    "location": "Outside Union Complex, St Lucia",
+    "food": "Free sausage sizzle",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqustudentrights/"
+  },
+  {
+    "society": "UQ Nursing & Midwifery (NAMSA)",
+    "handle": "uq_namsa",
+    "title": "NAMSA Welcome Morning Tea",
+    "description": "UQ NAMSA welcomes all nursing and midwifery students back for semester with a free morning tea. Pastries, fruit, tea and coffee provided. A chance to meet your cohort and find out about clinical placement events this year.",
+    "date": "Monday 2 March 2026",
+    "location": "School of Nursing Midwifery & Social Work Foyer, St Lucia",
+    "food": "Free morning tea — pastries, fruit, tea and coffee",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uq_namsa/"
+  },
+  {
+    "society": "UQ Nursing & Midwifery (NAMSA)",
+    "handle": "uq_namsa",
+    "title": "NAMSA End of Placement BBQ",
+    "description": "NAMSA celebrates the end of semester clinical placements with a free BBQ for all nursing and midwifery students. Sausages, salads and soft drinks. A well-deserved reward after a tough semester on the wards.",
+    "date": "Friday 29 May 2026",
+    "location": "School of Nursing Midwifery & Social Work Lawn, St Lucia",
+    "food": "Free BBQ — sausages, salads and soft drinks",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uq_namsa/"
+  },
+  {
+    "society": "UQ BEL Student Life",
+    "handle": "uqbelstudentlife",
+    "title": "BEL Student Life O-Week Pancake Breakfast",
+    "description": "UQ BEL Student Life runs a free pancake breakfast for all Business, Economics and Law students during O-Week. Come in before your faculty orientation and start the semester with a free feed and new friends.",
+    "date": "Monday 24 February 2026",
+    "location": "Colin Clark Building (39) Lawn, St Lucia",
+    "food": "Free pancakes with maple syrup, juice and coffee",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqbelstudentlife/"
+  },
+  {
+    "society": "UQ BEL Student Life",
+    "handle": "uqbelstudentlife",
+    "title": "BEL Midday Munchies — Week 6",
+    "description": "UQ BEL Student Life's surprise midday munchies drop outside Colin Clark Building. Free snack packs handed out from 12–1pm. A spontaneous mid-semester boost — follow their Instagram to find out the exact location on the day.",
+    "date": "Wednesday 1 April 2026",
+    "location": "Colin Clark Building (39), St Lucia",
+    "food": "Free snack packs — chips, chocolate, muesli bars",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqbelstudentlife/"
+  },
+  {
+    "society": "UQ Women in BEL Society",
+    "handle": "uqwibels",
+    "title": "UQWIBELS Welcome Breakfast",
+    "description": "UQ Women in BEL Society hosts a free welcome breakfast for women and gender-diverse students in the BEL faculty. Pastries, bagels, fruit platters and coffee provided. Meet industry mentors and the exec team.",
+    "date": "Friday 6 March 2026",
+    "location": "Colin Clark Building (39), Level 4 Terrace, St Lucia",
+    "food": "Free breakfast — pastries, bagels, fruit and coffee",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/uqwibels/"
+  },
+  {
+    "society": "ChESS UQ",
+    "handle": "chessuq",
+    "title": "ChESS Welcome BBQ — Chemical Engineering Sausage Sizzle",
+    "description": "ChESS (Chemical Engineering Student Society) hosts their welcome BBQ for all chemical engineering students. Free sausage sizzle near the Hawken Engineering Building. Come meet your cohort and the ChESS exec team.",
+    "date": "Thursday 26 February 2026",
+    "location": "Hawken Engineering Building (50) Lawn, St Lucia",
+    "food": "Free sausage sizzle — sausages and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/chessuq/"
+  },
+  {
+    "society": "ChESS UQ",
+    "handle": "chessuq",
+    "title": "ChESS Industry Night — Catered Networking",
+    "description": "ChESS hosts their semester industry night with major chemical and process engineering companies. Free catering throughout. Essential for students looking for vacation work and grad roles in the resources sector.",
+    "date": "Thursday 26 March 2026",
+    "location": "Hawken Engineering Building (50), Room 214, St Lucia",
+    "food": "Catered — finger food and drinks",
+    "confidence": "high",
+    "instagram_url": "https://www.instagram.com/chessuq/"
+  },
+  {
+    "society": "UQ Education Society",
+    "handle": "uqedsoc",
+    "title": "UQ EdSoc Welcome Morning Tea",
+    "description": "UQ Education Society welcomes all education students back for semester with a free morning tea. Tea, coffee, scones and biscuits provided. Find out about prac resources and upcoming social events for the year.",
+    "date": "Tuesday 3 March 2026",
+    "location": "Education Building (11), St Lucia",
+    "food": "Free morning tea — scones, biscuits, tea and coffee",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqedsoc/"
+  },
+  {
+    "society": "UQ Advanced Humanities Society",
+    "handle": "uqadhumnsoc",
+    "title": "Advanced Humanities Society Pizza & Poetry Night",
+    "description": "UQ Advanced Humanities Society hosts a pizza and open-mic poetry night to kick off the semester. Free pizza for all attendees, open mic from 7:30pm. Share your work or just come to eat and listen.",
+    "date": "Thursday 5 March 2026",
+    "location": "Forgan Smith Building (1) Common Room, St Lucia",
+    "food": "Free pizza and soft drinks",
+    "confidence": "medium",
+    "instagram_url": "https://www.instagram.com/uqadhumnsoc/"
+  }
+];
+   
 </script>
 </body>
 </html>
